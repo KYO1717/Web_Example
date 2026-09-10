@@ -1,0 +1,132 @@
+/* =========================================================
+   공용 스타일. 모든 페이지가 이 파일 하나를 씁니다.
+   색이나 크기를 바꾸면 사이트 전체가 한 번에 바뀝니다.
+   ========================================================= */
+
+:root {
+  --main: #6366f1;      /* 이 색만 바꿔도 분위기가 달라집니다 */
+  --text: #18181b;
+  --gray: #71717a;
+  --line: #e4e4e7;
+  --bg:   #fafafa;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0 0 80px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* ---------- 위쪽 메뉴 (common.js 가 채웁니다) ---------- */
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 20px;
+  background: #fff;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 28px;
+}
+
+header .menu { display: flex; gap: 16px; }
+
+header a {
+  color: var(--gray);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+header a.on { color: var(--main); font-weight: 600; }
+
+header .me { font-size: 13px; color: var(--gray); }
+
+/* ---------- 본문 ---------- */
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+h1 { font-size: 22px; margin: 0 0 20px; }
+h2 { font-size: 17px; margin: 28px 0 12px; }
+
+.logo { width: 48px; height: 48px; }
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.card p { margin: 0 0 10px; font-size: 15px; }
+
+input, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-family: inherit;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+}
+
+textarea { height: 80px; resize: vertical; }
+
+.row { display: flex; gap: 8px; }
+
+button, .btn {
+  display: inline-block;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button:hover, .btn:hover { background: #f4f4f5; }
+button:disabled { opacity: 0.5; cursor: default; }
+
+#aiBox {
+  margin-top: 12px;
+  font-size: 14px;
+  color: #3f3f46;
+  white-space: pre-wrap;
+}
+
+/* ---------- 목록 ---------- */
+
+ul { list-style: none; padding: 0; margin: 0; }
+
+li {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+li strong { color: var(--main); margin-right: 6px; }
+
+li button { float: right; padding: 3px 9px; font-size: 12px; }
+
+li .when {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--gray);
+}

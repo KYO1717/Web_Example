@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>게시판</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<!-- 로그인해야만 볼 수 있는 페이지라는 표시 -->
+<body data-require-auth="true">
+
+  <header id="nav"></header>
+
+  <main>
+    <h1>게시판</h1>
+
+    <section class="card">
+      <textarea id="content" placeholder="한 줄 남기기"></textarea>
+      <div class="row">
+        <button onclick="addPost()">등록</button>
+        <button id="aiBtn" onclick="polish()">AI에게 다듬어달라기</button>
+      </div>
+      <div id="aiBox"></div>
+    </section>
+
+    <ul id="list"></ul>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/board.js"></script>
+
+</body>
+</html>

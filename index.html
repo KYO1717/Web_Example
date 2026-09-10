@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>홈</title>
+  <!-- 경로는 항상 / 로 시작합니다. 폴더가 깊어져도 안 깨집니다. -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <header id="nav"></header>
+
+  <main>
+    <img src="/assets/logo.svg" alt="로고" class="logo">
+    <h1>우리 반 한 줄 게시판 (수정)</h1>
+
+    <!-- 로그인 안 했을 때 -->
+    <section id="loginBox" class="card" hidden>
+      <input id="email" type="email" placeholder="이메일">
+      <input id="password" type="password" placeholder="비밀번호 (6자 이상)">
+      <div class="row">
+        <button onclick="signUp()">회원가입</button>
+        <button onclick="signIn()">로그인</button> 
+      </div>
+    </section>
+
+    <!-- 로그인 했을 때 -->
+    <section id="welcomeBox" class="card" hidden>
+      <p id="hello"></p>
+      <a class="btn" href="/pages/board.html">게시판으로 가기</a>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/home.js"></script>
+
+</body>
+</html>

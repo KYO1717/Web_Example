@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- (1) 여기에 페이지 이름 -->
+  <title>새 페이지</title>
+
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<!-- (2) 로그인해야 볼 수 있는 페이지면 data-require-auth="true"남기고,
+        누구나 볼 수 있으면 그 부분 지우기 -->
+<body data-require-auth="true">
+
+  <header id="nav"></header>
+
+  <main>
+    <h1>새 페이지</h1>
+
+<!-- (3) 여기서부터는 자유롭게 만드시면 됩니다~~ -->
+    <section class="card">
+      <p>여기에 내용 넣어주기</p>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/js/common.js"></script>
+
+  <!-- (4) `새페이지.js` 부분을 이 파일 이름으로 바꿔 주세요 -->
+  <script src="/static/js/새페이지.js"></script>
+
+</body>
+</html>
+
+
+<!--
+=========================================================
+ 새 페이지 만드는 순서 (4단계)
+=========================================================
+
+ 1. 이 파일을 복사해서 pages/ 안에 새 이름으로 저장
+    예) pages/gallery.html
+
+ 2. assets/js/ 안에 같은 이름의 JS 파일 만들기
+    예) assets/js/gallery.js
+
+    안에는 이렇게 써주세요
+
+      function onAuthReady() {
+        // 로그인 확인이 끝나면 여기가 자동으로 실행됨
+        // currentUser, db, askAI 그대로 쓸 수 있음
+      }
+
+ 3. 위 (4) 부분의 script 주소를 새 JS 파일로 바꾸기
+
+ 4. assets/js/common.js 의 MENU 목록에 한 줄 추가
+
+      const MENU = [
+        { name: "홈",      url: "/index.html" },
+        { name: "게시판",  url: "/pages/board.html" },
+        { name: "내 정보", url: "/pages/mypage.html" },
+        { name: "갤러리",  url: "/pages/gallery.html" },   ← 추가
+      ];
+
+ 이것만 하면 메뉴, 로그인 유지, DB 연결, AI 호출 등 그대로 사용 가능함
+
+-->

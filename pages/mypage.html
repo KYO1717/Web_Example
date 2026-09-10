@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>내 정보</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body data-require-auth="true">
+
+  <header id="nav"></header>
+
+  <main>
+    <h1>내 정보</h1>
+
+    <section class="card">
+      <p>이메일: <strong id="myEmail"></strong></p>
+      <p>내가 쓴 글: <strong id="myCount">-</strong>개</p>
+    </section>
+
+    <h2>내가 쓴 글</h2>
+    <ul id="myList"></ul>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/mypage.js"></script>
+
+</body>
+</html>
