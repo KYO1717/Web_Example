@@ -35,8 +35,8 @@ my-project/
 |---|---|---|
 | `index.html`, `assets/` | **전 세계** | Supabase Publishable key |
 | GitHub 저장소 | 저장소를 볼 수 있는 사람 | 코드만. 키는 없음 |
-| `.env.local` (내 컴퓨터) | 나만 | Groq 키 |
-| Vercel 환경변수 | 나만 | Groq 키 (같은 값) |
+| `.env.local` (내 컴퓨터) | 나만 | Gemini API 키 |
+| Vercel 환경변수 | 나만 | Gemini API 키 (같은 값) |
 
 `.env.local` 은 깃에 안 올라가므로 **Vercel에는 따로 등록해야 합니다.**
 Settings → Environment Variables 에 넣고 **Redeploy** 까지 해야 반영됩니다.
