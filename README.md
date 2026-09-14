@@ -44,6 +44,25 @@ Settings → Environment Variables 에 넣고 **Redeploy** 까지 해야 반영�
 Supabase 키를 안 숨기는 건 실수가 아닙니다. 공개를 전제로 만들어진 키이고,
 권한은 DB의 RLS 정책이 따로 막습니다.
 
+## Google 로그인 설정
+
+홈 화면의 `Google 계정으로 로그인` 버튼은 Supabase Auth OAuth를 사용합니다.
+처음 한 번만 Supabase 대시보드에서 설정하세요.
+
+1. **Authentication → Providers → Google** 에서 Google provider를 켭니다.
+2. Google Cloud Console에서 OAuth 클라이언트를 만들고 Client ID와 Client Secret을 입력합니다.
+  Supabase Google provider 화면에 표시되는 Callback URL은 Google Cloud의
+  **Authorized redirect URIs**에도 등록해야 합니다.
+3. Supabase의 **Authentication → URL Configuration → Redirect URLs**에는 실제 사이트 주소를 추가합니다.
+
+```text
+http://localhost:5500/index.html
+https://내-vercel-주소.vercel.app/index.html
+```
+
+로컬 주소나 Vercel 주소가 다르면 실제 사용하는 주소로 바꿔야 합니다.
+Google provider를 켜지 않으면 버튼을 눌렀을 때 `provider is not enabled` 오류가 납니다.
+
 ## 규칙 1 — 주소는 항상 `/` 로 시작
 
 ```html
@@ -131,6 +150,9 @@ async function onAuthReady() {
   console.log(요약);
 }
 ```
+
+게시판의 `AI에게 다듬어달라기` 버튼은 `askAI()`를 통해 Gemini API를 호출합니다.
+브라우저에는 Gemini 키를 보내지 않고, `/api/ai` 서버 함수가 키를 사용합니다.
 
 ---
 

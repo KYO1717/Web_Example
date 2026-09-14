@@ -84,6 +84,15 @@ textarea { height: 80px; resize: vertical; }
 
 .row { display: flex; gap: 8px; }
 
+.login-divider {
+  margin: 14px 0 10px;
+  text-align: center;
+  color: var(--gray);
+  font-size: 13px;
+}
+
+.google-login { width: 100%; }
+
 button, .btn {
   display: inline-block;
   padding: 9px 16px;

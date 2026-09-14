@@ -78,6 +78,19 @@ async function signIn() {
   }
 }
 
+async function signInWithGoogle() {
+  const redirectTo = window.location.origin + "/index.html";
+  const { error } = await db.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: redirectTo },
+  });
+
+  if (error) {
+    console.error("Google 로그인 실패:", error);
+    alert("Google 로그인 실패: " + error.message);
+  }
+}
+
 async function signOut() {
   await db.auth.signOut();
   location.href = "/index.html";
