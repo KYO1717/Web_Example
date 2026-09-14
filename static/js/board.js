@@ -75,8 +75,8 @@ async function polish() {
       "다음 문장을 더 재미있게 다듬어줘. 한 문장으로만 답해줘: " + content
     );
   } catch (e) {
-    // Live Server 로 열면 /api/ai 가 없어서 여기로 옴
-    box.textContent = "AI 기능은 vercel dev 또는 배포된 주소에서만 동작합니다.";
+    console.error("AI 다듬기 실패:", e);
+    box.textContent = "AI 오류: " + (e.message || "알 수 없는 오류");
   } finally {
     btn.disabled = false;
   }
