@@ -8,8 +8,8 @@
 // ---------------------------------------------------------
 // Supabase 대시보드 > Settings > API Keys 에서 복사해오시면 돼요
 // 이 두 값은 공개돼도 ㄱㅊ음
-const SUPABASE_URL = "⭐⭐⭐ 본인 걸로 바꿔주기";
-const SUPABASE_KEY = "⭐⭐⭐ 본인 걸로 바꿔주기";
+const SUPABASE_URL = "https://meqsyijcoedeotakqpzu.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Yt9qhbO1kCFjOsJf1TJDHQ_zDSqkift";
 
 // (*참고 : CDN이 supabase 라는 이름을 이미 쓰고 있으믐로 우리가 만드는 것은 db 라고 부를 예정)
 
