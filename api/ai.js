@@ -9,7 +9,7 @@ export default async function handler(req, res) {
 
   // ———————————————————————————————— 1. 키 꺼내서 청소하기 ————————————————————————————————
 
-  const NAMES = ["GEMINI_API_KEY"];
+  const NAMES = ["GEMINI_API_TEST", "GEMINI_API_KEY"];
   const found = NAMES.find(function (n) {
     return process.env[n];
   });
