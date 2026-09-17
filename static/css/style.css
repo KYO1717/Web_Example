@@ -139,3 +139,64 @@ li .when {
   font-size: 12px;
   color: var(--gray);
 }
+
+/* ---------- 로그라이크 게임 ---------- */
+
+.game-main { max-width: 1100px; }
+.game-heading, .panel-title, .hand-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.game-heading { margin-bottom: 22px; }
+.game-heading h1 { font-size: 34px; letter-spacing: -1px; margin: 0 0 4px; }
+.eyebrow { margin: 0 0 7px; color: var(--main); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+.muted { color: var(--gray); font-size: 13px; }
+.run-stats { display: flex; gap: 16px; flex-wrap: wrap; color: var(--gray); font-size: 13px; }
+.run-stats strong { color: var(--text); }
+.game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; }
+.game-panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+.game-panel h2 { margin: 0; }
+.map-panel { overflow: hidden; }
+.map-nodes { display: grid; gap: 13px; margin-top: 22px; }
+.map-floor { display: grid; grid-template-columns: 44px repeat(6, minmax(70px, 1fr)); align-items: center; gap: 8px; }
+.floor-label { color: var(--gray); font-size: 12px; }
+.map-node { min-height: 62px; padding: 8px 5px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.map-node.available { border-color: var(--main); background: #f8f8ff; }
+.map-node.available:hover { transform: translateY(-2px); }
+.map-node.cleared { background: #f4f4f5; color: var(--gray); }
+.map-node.locked { opacity: .45; }
+.node-floor { font-size: 10px; color: var(--gray); }
+.map-node strong { font-size: 13px; }
+.enemy-hp { color: #b42318; font-size: 13px; font-weight: 700; }
+.enemy-bar { height: 8px; background: #f4dada; border-radius: 99px; margin: 16px 0; overflow: hidden; }
+.enemy-bar span { display: block; height: 100%; background: #c2413b; transition: width .25s ease; }
+.combat-log { min-height: 21px; color: var(--gray); font-size: 14px; }
+.hand-heading { align-items: center; margin-top: 22px; }
+.hand-heading h3 { margin: 0; font-size: 15px; }
+.card-hand { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; margin: 12px 0 16px; }
+.play-card { min-height: 130px; padding: 12px 9px; border: 1px solid #d4d4d8; border-radius: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; }
+.play-card:hover, .play-card.selected { border-color: var(--main); background: #f8f8ff; }
+.play-card strong { font-size: 15px; }
+.play-card span { font-size: 12px; }
+.play-card small { color: var(--gray); line-height: 1.4; }
+.play-card.defense { border-top: 3px solid #227c9d; }
+.play-card.attack { border-top: 3px solid #c2413b; }
+.card-rank { color: var(--main); font-weight: 700; }
+.combat-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.combat-actions button:first-child { background: var(--main); border-color: var(--main); color: white; }
+.relic-panel { height: fit-content; }
+.relic-panel h2 { margin-bottom: 16px; }
+.relic-list { display: flex; flex-direction: column; gap: 8px; }
+.relic { padding: 10px; background: #f4f4f5; border-radius: 6px; font-size: 13px; }
+.ai-note { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 20px; }
+.ai-note p:not(.eyebrow) { min-height: 54px; font-size: 13px; line-height: 1.6; }
+.ai-note button { width: 100%; }
+.result-panel { border-color: var(--main); }
+.result-panel h2 { margin-bottom: 8px; }
+
+@media (max-width: 760px) {
+  .game-heading, .panel-title { align-items: flex-start; flex-direction: column; }
+  .game-heading h1 { font-size: 28px; }
+  .game-layout { grid-template-columns: 1fr; }
+  .map-panel { overflow-x: auto; }
+  .map-nodes { min-width: 650px; }
+  .card-hand { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .play-card { min-height: 116px; }
+}

@@ -74,6 +74,14 @@ export default async function handler(req, res) {
             "모델 '" + MODEL + "' 을(를) 쓸 수 없습니다(404). Gemini 모델 이름을 확인하세요.",
         });
       }
+
+      if (r.status === 429) {
+        return res.status(429).json({
+          error:
+            "Gemini 요청 한도를 초과했습니다(429). 잠시 후 다시 시도하거나 Google AI Studio의 할당량을 확인하세요.",
+        });
+      }
+
       return res.status(502).json({ error: "AI 서버에서 오류가 났습니다. (" + r.status + ")" });
     }
 

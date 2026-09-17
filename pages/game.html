@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>별의 기록</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body data-require-auth="true">
+  <header id="nav"></header>
+
+  <main class="game-main">
+    <section class="game-heading">
+      <div>
+        <p class="eyebrow">THE ARCHIVE / RUN 001</p>
+        <h1>별의 기록</h1>
+        <p class="muted">세 층의 기록을 지나 마지막 문을 여세요.</p>
+      </div>
+      <div class="run-stats">
+        <span>층 <strong id="floorValue">1</strong> / 3</span>
+        <span>HP <strong id="hpValue">30 / 30</strong></span>
+        <span>소지금 <strong id="goldValue">0</strong></span>
+      </div>
+    </section>
+
+    <section class="game-layout">
+      <div>
+        <section class="game-panel map-panel">
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">PATH</p>
+              <h2>기록의 경로</h2>
+            </div>
+            <span id="nodeHint" class="muted">노드를 선택하세요.</span>
+          </div>
+          <div id="map" class="map-nodes" aria-label="게임 맵"></div>
+        </section>
+
+        <section id="combatPanel" class="game-panel combat-panel" hidden>
+          <div class="panel-title">
+            <div>
+              <p class="eyebrow">ENCOUNTER</p>
+              <h2 id="enemyName">기록의 잔상</h2>
+            </div>
+            <span id="enemyHp" class="enemy-hp"></span>
+          </div>
+          <div class="enemy-bar"><span id="enemyBarFill"></span></div>
+          <p id="combatLog" class="combat-log">카드를 선택해 행동하세요.</p>
+
+          <div class="hand-heading">
+            <h3>손패</h3>
+            <span id="selectionHint" class="muted">같은 카드 2장을 선택하면 합성됩니다.</span>
+          </div>
+          <div id="hand" class="card-hand"></div>
+          <div class="combat-actions">
+            <button id="playButton" type="button" disabled>선택 카드 사용</button>
+            <button id="fuseButton" type="button" disabled>카드 합성</button>
+            <button id="endTurnButton" type="button">턴 종료</button>
+          </div>
+        </section>
+
+        <section id="resultPanel" class="game-panel result-panel" hidden>
+          <p class="eyebrow">RUN STATUS</p>
+          <h2 id="resultTitle"></h2>
+          <p id="resultText" class="muted"></p>
+          <button id="restartButton" type="button">새로운 기록 시작</button>
+        </section>
+      </div>
+
+      <aside class="game-panel relic-panel">
+        <p class="eyebrow">RELICS</p>
+        <h2>기록물</h2>
+        <div id="relics" class="relic-list"><span class="muted">아직 기록물이 없습니다.</span></div>
+        <div class="ai-note">
+          <p class="eyebrow">GEMINI ARCHIVE</p>
+          <p id="aiText">이번 기록에 대한 짧은 해설을 받아보세요.</p>
+          <button id="aiButton" type="button">해설 받기</button>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/js/common.js"></script>
+  <script src="/static/js/game.js"></script>
+</body>
+</html>
