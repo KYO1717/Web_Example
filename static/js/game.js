@@ -138,6 +138,7 @@ function selectNode(nodeId) {
 
 function startCombat(node) {
   const boss = node.type === "boss";
+  gameState.hp = gameState.maxHp;
   gameState.combat = {
     enemyName: boss ? "층의 관리자" : node.type === "elite" ? "깊은 기록의 사냥꾼" : "기록의 잔상",
     enemyHp: boss ? 45 : node.type === "elite" ? 28 : 18,
