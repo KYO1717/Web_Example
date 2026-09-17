@@ -24,7 +24,6 @@ const gameState = {
   deck: [],
   hand: [],
   selectedCards: [],
-  discard: [],
   combat: null,
   relics: [],
   runEnded: false,
@@ -43,13 +42,16 @@ function resetGame() {
   gameState.currentNode = null;
   gameState.deck = [
     createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
+    createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
+    createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1),
     createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1),
     createCard("heal", 1), createCard("heal", 1), createCard("heal", 1), createCard("heal", 1),
+    createCard("heal", 1), createCard("heal", 1), createCard("heal", 1), createCard("heal", 1),
+    createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
     createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
   ];
   gameState.hand = [];
   gameState.selectedCards = [];
-  gameState.discard = [];
   gameState.combat = null;
   gameState.relics = [];
   gameState.runEnded = false;
@@ -146,16 +148,14 @@ function startCombat(node) {
     damageOverTimeTurns: 0,
     turn: "player",
   };
-  drawCards(8);
+  drawCards(Math.max(0, 8 - gameState.hand.length));
 }
 
 function drawCards(amount) {
   for (let index = 0; index < amount; index += 1) {
-    if (gameState.deck.length === 0) {
-      gameState.deck = gameState.discard;
-      gameState.discard = [];
-    }
-    if (gameState.deck.length > 0) gameState.hand.push(gameState.deck.shift());
+    if (gameState.deck.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * gameState.deck.length);
+    gameState.hand.push(gameState.deck.splice(randomIndex, 1)[0]);
   }
 }
 
@@ -178,7 +178,7 @@ function renderCombat() {
   document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
   document.getElementById("playerBlock").textContent = "방어도 " + gameState.combat.block;
   document.getElementById("enemyIntent").textContent = playerTurn ? "다음 행동: 공격 " + gameState.combat.enemyDamage : "행동 중...";
-  document.getElementById("selectionHint").textContent = playerTurn ? "손패 8장 · 같은 카드 2장을 선택하면 합성됩니다." : "적의 턴입니다.";
+  document.getElementById("selectionHint").textContent = playerTurn ? "손패 8장 · 사용한 만큼 남은 덱에서 랜덤 보충" : "적의 턴입니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
   document.getElementById("fuseButton").disabled = !playerTurn || !canFuseSelection();
 }
@@ -254,7 +254,6 @@ function playSelectedCard() {
     gameState.combat.enemyHp -= value;
     document.getElementById("combatLog").textContent = "섬광으로 즉시 " + value + " 피해를 주었습니다.";
   }
-  gameState.discard.push(card);
   gameState.selectedCards = [];
   checkCombatEnd();
   if (gameState.combat) enemyTurn(CARD_LIBRARY[card.id].name + " 카드를 사용했습니다.");
@@ -283,14 +282,12 @@ function enemyTurn(playerAction) {
   const damage = Math.max(0, gameState.combat.enemyDamage - gameState.combat.block);
   gameState.hp -= damage;
   gameState.combat.block = 0;
-  gameState.discard.push.apply(gameState.discard, gameState.hand);
-  gameState.hand = [];
   gameState.selectedCards = [];
   if (gameState.hp <= 0) {
     endRun(false, "기록이 여기서 끝났습니다.");
     return;
   }
-  drawCards(8);
+  drawCards(Math.max(0, 8 - gameState.hand.length));
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }
