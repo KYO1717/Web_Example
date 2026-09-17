@@ -1,7 +1,8 @@
 const CARD_LIBRARY = {
-  ember: { name: "잔불", type: "attack", description: "적에게 피해를 줍니다." },
-  veil: { name: "장막", type: "defense", description: "방어도를 얻습니다." },
-  pulse: { name: "맥동", type: "attack", description: "작은 피해를 줍니다." },
+  strike: { name: "섬광", type: "direct", description: "즉시 적에게 피해를 줍니다." },
+  bleed: { name: "흔적", type: "damage-over-time", description: "3턴 동안 적에게 지속 피해를 줍니다." },
+  heal: { name: "회귀", type: "heal", description: "아군 HP를 회복합니다." },
+  shield: { name: "결계", type: "defense", description: "이번 적 공격을 막을 실드를 얻습니다." },
 };
 
 const NODE_TYPES = ["battle", "event", "battle", "rest", "elite", "battle"];
@@ -41,8 +42,10 @@ function resetGame() {
   gameState.map = createMap();
   gameState.currentNode = null;
   gameState.deck = [
-    createCard("ember", 1), createCard("ember", 1), createCard("ember", 1),
-    createCard("veil", 1), createCard("veil", 1), createCard("pulse", 1),
+    createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
+    createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1),
+    createCard("heal", 1), createCard("heal", 1), createCard("heal", 1), createCard("heal", 1),
+    createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
   ];
   gameState.hand = [];
   gameState.selectedCards = [];
@@ -139,9 +142,11 @@ function startCombat(node) {
     enemyMaxHp: boss ? 45 : node.type === "elite" ? 28 : 18,
     enemyDamage: boss ? 8 : node.type === "elite" ? 6 : 4,
     block: 0,
+    damageOverTime: 0,
+    damageOverTimeTurns: 0,
     turn: "player",
   };
-  drawCards(5);
+  drawCards(8);
 }
 
 function drawCards(amount) {
@@ -173,7 +178,7 @@ function renderCombat() {
   document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
   document.getElementById("playerBlock").textContent = "방어도 " + gameState.combat.block;
   document.getElementById("enemyIntent").textContent = playerTurn ? "다음 행동: 공격 " + gameState.combat.enemyDamage : "행동 중...";
-  document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드 2장을 선택하면 합성됩니다." : "적의 턴입니다.";
+  document.getElementById("selectionHint").textContent = playerTurn ? "손패 8장 · 같은 카드 2장을 선택하면 합성됩니다." : "적의 턴입니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
   document.getElementById("fuseButton").disabled = !playerTurn || !canFuseSelection();
 }
@@ -195,7 +200,10 @@ function renderHand() {
 }
 
 function getCardValue(card) {
-  return card.id === "veil" ? 5 * card.rank : (card.id === "pulse" ? 4 : 7) * card.rank;
+  if (card.id === "shield") return 5 * card.rank;
+  if (card.id === "heal") return 6 * card.rank;
+  if (card.id === "bleed") return 3 * card.rank;
+  return 7 * card.rank;
 }
 
 function toggleCard(uid) {
@@ -231,12 +239,20 @@ function playSelectedCard() {
   const index = gameState.hand.findIndex(function (card) { return card.uid === gameState.selectedCards[0]; });
   const card = gameState.hand.splice(index, 1)[0];
   const value = getCardValue(card);
-  if (card.id === "veil") {
+  if (card.id === "shield") {
     gameState.combat.block += value;
-    document.getElementById("combatLog").textContent = "장막으로 " + value + " 방어도를 얻었습니다.";
+    document.getElementById("combatLog").textContent = "결계로 실드 " + value + "을 얻었습니다.";
+  } else if (card.id === "heal") {
+    const healed = Math.min(value, gameState.maxHp - gameState.hp);
+    gameState.hp += healed;
+    document.getElementById("combatLog").textContent = "회귀로 HP를 " + healed + " 회복했습니다.";
+  } else if (card.id === "bleed") {
+    gameState.combat.damageOverTime = value;
+    gameState.combat.damageOverTimeTurns = 3;
+    document.getElementById("combatLog").textContent = "흔적이 적에게 매 턴 " + value + " 지속 피해를 남겼습니다.";
   } else {
     gameState.combat.enemyHp -= value;
-    document.getElementById("combatLog").textContent = CARD_LIBRARY[card.id].name + "으로 " + value + " 피해를 주었습니다.";
+    document.getElementById("combatLog").textContent = "섬광으로 즉시 " + value + " 피해를 주었습니다.";
   }
   gameState.discard.push(card);
   gameState.selectedCards = [];
@@ -254,6 +270,16 @@ function endTurn() {
 function enemyTurn(playerAction) {
   if (!gameState.combat) return;
   gameState.combat.turn = "enemy";
+  let damageOverTimeMessage = "";
+  if (gameState.combat.damageOverTimeTurns > 0) {
+    gameState.combat.enemyHp -= gameState.combat.damageOverTime;
+    gameState.combat.damageOverTimeTurns -= 1;
+    damageOverTimeMessage = " 지속 피해 " + gameState.combat.damageOverTime + " 적용.";
+    if (gameState.combat.enemyHp <= 0) {
+      checkCombatEnd();
+      return;
+    }
+  }
   const damage = Math.max(0, gameState.combat.enemyDamage - gameState.combat.block);
   gameState.hp -= damage;
   gameState.combat.block = 0;
@@ -264,9 +290,9 @@ function enemyTurn(playerAction) {
     endRun(false, "기록이 여기서 끝났습니다.");
     return;
   }
-  drawCards(5);
+  drawCards(8);
   gameState.combat.turn = "player";
-  document.getElementById("combatLog").textContent = playerAction + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
+  document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }
 
 function checkCombatEnd() {

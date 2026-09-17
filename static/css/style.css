@@ -189,14 +189,16 @@ li .when {
 .combat-log { min-height: 21px; color: var(--gray); font-size: 14px; }
 .hand-heading { align-items: center; margin-top: 22px; }
 .hand-heading h3 { margin: 0; font-size: 15px; }
-.card-hand { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 9px; margin: 12px 0 16px; }
+.card-hand { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 12px 0 16px; }
 .play-card { min-height: 130px; padding: 12px 9px; border: 1px solid #d4d4d8; border-radius: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; }
 .play-card:hover, .play-card.selected { border-color: var(--main); background: #f8f8ff; }
 .play-card strong { font-size: 15px; }
 .play-card span { font-size: 12px; }
 .play-card small { color: var(--gray); line-height: 1.4; }
 .play-card.defense { border-top: 3px solid #227c9d; }
-.play-card.attack { border-top: 3px solid #c2413b; }
+.play-card.direct { border-top: 3px solid #c2413b; }
+.play-card.damage-over-time { border-top: 3px solid #ad6b2f; }
+.play-card.heal { border-top: 3px solid #3a8b62; }
 .card-rank { color: var(--main); font-weight: 700; }
 .combat-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .combat-actions button:first-child { background: var(--main); border-color: var(--main); color: white; }
