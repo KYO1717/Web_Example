@@ -14,6 +14,11 @@ const NODE_LABELS = {
   boss: "보스",
 };
 
+const RELIC_LIBRARY = {
+  starMap: { name: "낡은 별 지도", description: "전투 승리 금화 +5" },
+  compass: { name: "유리 나침반", description: "모든 카드 효과 +1" },
+};
+
 const gameState = {
   floor: 1,
   hp: 30,
@@ -174,7 +179,7 @@ function chooseEvent(choice) {
     return;
   }
   gameState.gold += 25;
-  gameState.relics.push("낡은 별 지도");
+  addRelic("starMap");
   finishEvent("금화 25와 낡은 별 지도를 얻었습니다.");
 }
 
@@ -267,7 +272,7 @@ function chooseShop(choice) {
     gameState.hp = gameState.maxHp;
     document.getElementById("shopMessage").textContent = "최대 HP가 5 증가했습니다.";
   } else {
-    gameState.relics.push("유리 나침반");
+    addRelic("compass");
     document.getElementById("shopMessage").textContent = "유리 나침반을 구매했습니다.";
   }
   renderAll();
@@ -369,10 +374,11 @@ function renderHand() {
 }
 
 function getCardValue(card) {
-  if (card.id === "shield") return 5 * card.rank;
-  if (card.id === "heal") return 6 * card.rank;
-  if (card.id === "bleed") return 3 * card.rank;
-  return 7 * card.rank;
+  const bonus = gameState.relics.some(function (relic) { return relic.id === "compass"; }) ? 1 : 0;
+  if (card.id === "shield") return 5 * card.rank + bonus;
+  if (card.id === "heal") return 6 * card.rank + bonus;
+  if (card.id === "bleed") return 3 * card.rank + bonus;
+  return 7 * card.rank + bonus;
 }
 
 function toggleCard(uid) {
@@ -464,11 +470,13 @@ function enemyTurn(playerAction) {
 function checkCombatEnd() {
   if (gameState.combat.enemyHp > 0) return;
   const node = gameState.currentNode;
-  const reward = node.type === "boss" ? 40 : node.type === "elite" ? 20 : 10;
+  const reward = (node.type === "boss" ? 40 : node.type === "elite" ? 20 : 10) +
+    (gameState.relics.some(function (relic) { return relic.id === "starMap"; }) ? 5 : 0);
   gameState.gold += reward;
   gameState.combat = null;
-  completeNode((node.type === "boss" ? "최종 보스를 쓰러뜨렸습니다." : "전투에서 승리했습니다.") + " 금화 " + reward + "G를 얻었습니다.");
-  if (node.type === "boss") endRun(true, "세 층의 기록을 모두 통과했습니다.");
+  const finalBoss = node.type === "boss" && node.floor === 3;
+  completeNode((finalBoss ? "최종 보스를 쓰러뜨렸습니다." : node.type === "boss" ? "층의 보스를 쓰러뜨렸습니다." : "전투에서 승리했습니다.") + " 금화 " + reward + "G를 얻었습니다.");
+  if (finalBoss) endRun(true, "세 층의 기록을 모두 통과했습니다.");
 }
 
 function completeNode(message) {
@@ -492,9 +500,17 @@ function endRun(won, message) {
   gameState.combat = null;
 }
 
+function addRelic(id) {
+  if (gameState.relics.some(function (relic) { return relic.id === id; })) return;
+  gameState.relics.push({ id: id });
+}
+
 function renderRelics() {
   document.getElementById("relics").innerHTML = gameState.relics.length
-    ? gameState.relics.map(function (relic) { return "<span class=\"relic\">" + relic + "</span>"; }).join("")
+    ? gameState.relics.map(function (relic) {
+      const data = RELIC_LIBRARY[relic.id];
+      return "<span class=\"relic\"><strong>" + data.name + "</strong><small>" + data.description + "</small></span>";
+    }).join("")
     : '<span class="muted">아직 기록물이 없습니다.</span>';
 }
 
@@ -502,7 +518,7 @@ async function requestArchiveNote() {
   const text = document.getElementById("aiText");
   text.textContent = "기록을 읽는 중...";
   try {
-    text.textContent = await askAI("로그라이크 게임의 현재 상황을 신비로운 기록 보관자의 말투로 한 문장만 해설해줘. 현재 층: " + gameState.floor + ", HP: " + gameState.hp + ", 기록물: " + gameState.relics.join(", "));
+    text.textContent = await askAI("로그라이크 게임의 현재 상황을 신비로운 기록 보관자의 말투로 한 문장만 해설해줘. 현재 층: " + gameState.floor + ", HP: " + gameState.hp + ", 기록물: " + gameState.relics.map(function (relic) { return RELIC_LIBRARY[relic.id].name; }).join(", "));
   } catch (error) {
     text.textContent = "기록 보관소에 연결하지 못했습니다.";
   }

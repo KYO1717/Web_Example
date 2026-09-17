@@ -206,6 +206,8 @@ li .when {
 .relic-panel h2 { margin-bottom: 16px; }
 .relic-list { display: flex; flex-direction: column; gap: 8px; }
 .relic { padding: 10px; background: #f4f4f5; border-radius: 6px; font-size: 13px; }
+.relic strong, .relic small { display: block; }
+.relic small { margin-top: 4px; color: var(--gray); font-size: 11px; line-height: 1.4; }
 .ai-note { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 20px; }
 .ai-note p:not(.eyebrow) { min-height: 54px; font-size: 13px; line-height: 1.6; }
 .ai-note button { width: 100%; }
