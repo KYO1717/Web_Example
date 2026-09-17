@@ -25,7 +25,6 @@ let currentUser = null;
 const MENU = [
   { name: "홈", url: "/index.html" },
   { name: "게임", url: "/pages/game.html" },
-  { name: "게시판", url: "/pages/board.html" },
   { name: "내 정보", url: "/pages/mypage.html" },
 ];
 
@@ -105,7 +104,7 @@ async function signOut() {
 // ★★ 아래 pageReady를 지우면 로그인 화면 안뜨니까 꼭 남겨두기 ★★
 //
 // Supabase 는 첫 신호(INITIAL_SESSION)를 아주 빨리 보내서, 
-// 이 파일 다음 줄에서 불러오는 페이지 전용 파일(home.js, board.js ...) 실행되기 전에 아래 콜백이 먼저 도는 일 발생
+// 이 파일 다음 줄에서 불러오는 페이지 전용 파일(home.js, game.js ...) 실행되기 전에 아래 콜백이 먼저 도는 일 발생
 // 그러면 onAuthReady 아직 없어서 화면이 텅 빈 채로 남고, 페이지 스크립트가 모두 준비된 뒤에 실행되도록 한 번 기다리게 함
 
 const pageReady = new Promise(function (resolve) {
@@ -135,7 +134,7 @@ db.auth.onAuthStateChange(function (event, session) {
     } else {
       // 있어야 할 함수가 없으면 조용히 넘어가지 말고 알려줍니다.
       console.warn(
-        "onAuthReady 가 없습니다. 이 페이지의 전용 js(home.js, board.js ...)가 " +
+        "onAuthReady 가 없습니다. 이 페이지의 전용 js(home.js, game.js ...)가 " +
         "제대로 불렸는지 확인하세요."
       );
     }

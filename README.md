@@ -6,7 +6,7 @@ my-project/
 ├─ index.html                 홈 (로그인 화면)
 │
 ├─ pages/                     ★ 새 페이지는 전부 여기에
-│  ├─ board.html                게시판
+│  ├─ game.html                 로그라이크 게임
 │  ├─ mypage.html               내 정보
 │  └─ _새페이지_템플릿.html      복사해서 쓰는 빈 페이지
 │
@@ -16,7 +16,7 @@ my-project/
 │  ├─ js/
 │  │  ├─ common.js              연결·로그인·메뉴 (모든 페이지가 함께 씀)
 │  │  ├─ home.js                홈 전용
-│  │  ├─ board.js               게시판 전용
+│  │  ├─ game.js                게임 전용
 │  │  └─ mypage.js              내 정보 전용
 │  └─ img/
 │     └─ logo.svg               이미지는 여기에 넣기
@@ -76,7 +76,7 @@ Google provider를 켜지 않으면 버튼을 눌렀을 때 `provider is not ena
 <script src="../assets/js/common.js"></script>
 ```
 
-`/` 없이 쓰면 `index.html`에서는 되는데 `pages/board.html`에서는 깨집니다.
+`/` 없이 쓰면 `index.html`에서는 되는데 `pages/game.html`에서는 깨집니다.
 폴더 깊이가 달라지기 때문입니다.
 **`/` 로 시작하면 어느 폴더에서든 똑같이 동작합니다.**
 
@@ -85,7 +85,7 @@ Google provider를 켜지 않으면 버튼을 눌렀을 때 `provider is not ena
 `common.js` 는 모두가 함께 쓰고, 각 페이지는 자기 JS만 추가로 부릅니다.
 
 한 파일에 다 넣지 마세요. 나눠두면 Copilot에게
-"board.js의 addPost 함수 고쳐줘"처럼 좁게 지시할 수 있어서 **크레딧이 훨씬 덜 듭니다.**
+"game.js의 카드 합성 함수를 고쳐줘"처럼 좁게 지시할 수 있어서 **크레딧이 훨씬 덜 듭니다.**
 
 ## 규칙 3 — `onAuthReady()` 안에서 시작
 
@@ -143,15 +143,11 @@ function onAuthReady() {
 ```js
 // 예시
 async function onAuthReady() {
-  const { data, error } = await db.from("posts").select("*");
-  if (error) { console.error(error); return; }
-
-  const 요약 = await askAI("이 글들을 한 줄로 요약해줘: " + JSON.stringify(data));
-  console.log(요약);
+  // 게임 페이지가 로그인 후 시작됩니다.
 }
 ```
 
-게시판의 `AI에게 다듬어달라기` 버튼은 `askAI()`를 통해 Gemini API를 호출합니다.
+게임의 `해설 받기` 버튼은 `askAI()`를 통해 Gemini API를 호출합니다.
 브라우저에는 Gemini 키를 보내지 않고, `/api/ai` 서버 함수가 키를 사용합니다.
 
 ---

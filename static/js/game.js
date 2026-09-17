@@ -139,6 +139,7 @@ function startCombat(node) {
     enemyMaxHp: boss ? 45 : node.type === "elite" ? 28 : 18,
     enemyDamage: boss ? 8 : node.type === "elite" ? 6 : 4,
     block: 0,
+    turn: "player",
   };
   drawCards(5);
 }
@@ -163,8 +164,10 @@ function renderCombat() {
   document.getElementById("enemyName").textContent = gameState.combat.enemyName;
   document.getElementById("enemyHp").textContent = gameState.combat.enemyHp + " / " + gameState.combat.enemyMaxHp;
   document.getElementById("enemyBarFill").style.width = Math.max(0, gameState.combat.enemyHp / gameState.combat.enemyMaxHp * 100) + "%";
-  document.getElementById("playButton").disabled = gameState.selectedCards.length !== 1;
-  document.getElementById("fuseButton").disabled = !canFuseSelection();
+  const playerTurn = gameState.combat.turn === "player";
+  document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드 2장을 선택하면 합성됩니다." : "적의 턴입니다.";
+  document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
+  document.getElementById("fuseButton").disabled = !playerTurn || !canFuseSelection();
 }
 
 function renderHand() {
@@ -188,6 +191,7 @@ function getCardValue(card) {
 }
 
 function toggleCard(uid) {
+  if (!gameState.combat || gameState.combat.turn !== "player") return;
   if (gameState.selectedCards.includes(uid)) {
     gameState.selectedCards = gameState.selectedCards.filter(function (id) { return id !== uid; });
   } else if (gameState.selectedCards.length < 2) {
@@ -203,7 +207,7 @@ function canFuseSelection() {
 }
 
 function fuseSelectedCards() {
-  if (!canFuseSelection()) return;
+  if (!gameState.combat || gameState.combat.turn !== "player" || !canFuseSelection()) return;
   const selected = gameState.hand.filter(function (card) { return gameState.selectedCards.includes(card.uid); });
   gameState.hand = gameState.hand.filter(function (card) { return !gameState.selectedCards.includes(card.uid); });
   gameState.hand.push(createCard(selected[0].id, selected[0].rank + 1));
@@ -213,7 +217,7 @@ function fuseSelectedCards() {
 }
 
 function playSelectedCard() {
-  if (gameState.selectedCards.length !== 1 || !gameState.combat) return;
+  if (gameState.selectedCards.length !== 1 || !gameState.combat || gameState.combat.turn !== "player") return;
   const index = gameState.hand.findIndex(function (card) { return card.uid === gameState.selectedCards[0]; });
   const card = gameState.hand.splice(index, 1)[0];
   const value = getCardValue(card);
@@ -227,11 +231,19 @@ function playSelectedCard() {
   gameState.discard.push(card);
   gameState.selectedCards = [];
   checkCombatEnd();
+  if (gameState.combat) enemyTurn();
   renderAll();
 }
 
 function endTurn() {
+  if (!gameState.combat || gameState.combat.turn !== "player") return;
+  enemyTurn();
+  renderAll();
+}
+
+function enemyTurn() {
   if (!gameState.combat) return;
+  gameState.combat.turn = "enemy";
   const damage = Math.max(0, gameState.combat.enemyDamage - gameState.combat.block);
   gameState.hp -= damage;
   gameState.combat.block = 0;
@@ -243,8 +255,8 @@ function endTurn() {
     return;
   }
   drawCards(5);
-  document.getElementById("combatLog").textContent = "적의 공격으로 " + damage + " 피해를 받았습니다.";
-  renderAll();
+  gameState.combat.turn = "player";
+  document.getElementById("combatLog").textContent = "적의 턴: " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }
 
 function checkCombatEnd() {
