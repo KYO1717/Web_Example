@@ -25,6 +25,7 @@ const gameState = {
   hand: [],
   selectedCards: [],
   combat: null,
+  event: null,
   relics: [],
   runEnded: false,
 };
@@ -53,6 +54,7 @@ function resetGame() {
   gameState.hand = [];
   gameState.selectedCards = [];
   gameState.combat = null;
+  gameState.event = null;
   gameState.relics = [];
   gameState.runEnded = false;
   document.getElementById("resultPanel").hidden = true;
@@ -88,6 +90,7 @@ function renderAll() {
   renderMap();
   renderHand();
   renderCombat();
+  renderEvent();
   renderRelics();
 }
 
@@ -129,10 +132,82 @@ function selectNode(nodeId) {
     gameState.hp = Math.min(gameState.maxHp, gameState.hp + 8);
     completeNode("휴식으로 HP를 회복했습니다.");
   } else {
-    gameState.gold += 15;
-    gameState.relics.push("낡은 별 지도");
-    completeNode("이벤트에서 기록물과 금화를 얻었습니다.");
+    openEvent();
   }
+  renderAll();
+}
+
+function openEvent() {
+  gameState.event = { open: true };
+  document.getElementById("nodeHint").textContent = "성장 선택지 중 하나를 고르세요.";
+}
+
+function renderEvent() {
+  const panel = document.getElementById("eventPanel");
+  const choices = document.getElementById("eventChoices");
+  if (!gameState.event || !gameState.event.open) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+  choices.innerHTML =
+    '<button class="event-choice" data-event-choice="upgrade" type="button"><strong>기록을 벼리기</strong><span>카드 1장을 선택해 1등급 강화합니다.</span></button>' +
+    '<button class="event-choice" data-event-choice="max-hp" type="button"><strong>생명력 확장</strong><span>최대 HP를 5 늘리고 HP를 모두 회복합니다.</span></button>' +
+    '<button class="event-choice" data-event-choice="relic" type="button"><strong>낡은 별 지도</strong><span>금화 25와 기록물을 얻습니다.</span></button>';
+  choices.querySelectorAll(".event-choice").forEach(function (button) {
+    button.addEventListener("click", function () { chooseEvent(button.dataset.eventChoice); });
+  });
+}
+
+function chooseEvent(choice) {
+  if (!gameState.event || !gameState.event.open) return;
+  if (choice === "upgrade") {
+    showUpgradeChoices();
+    return;
+  }
+  if (choice === "max-hp") {
+    gameState.maxHp += 5;
+    gameState.hp = gameState.maxHp;
+    finishEvent("최대 HP가 5 증가했습니다.");
+    return;
+  }
+  gameState.gold += 25;
+  gameState.relics.push("낡은 별 지도");
+  finishEvent("금화 25와 낡은 별 지도를 얻었습니다.");
+}
+
+function showUpgradeChoices() {
+  const choices = document.getElementById("eventChoices");
+  const candidates = [];
+  gameState.hand.concat(gameState.deck).forEach(function (card) {
+    if (card.rank >= 3 || candidates.some(function (item) { return item.id === card.id; })) return;
+    candidates.push(card);
+  });
+  if (candidates.length === 0) {
+    choices.innerHTML = '<p class="muted">강화할 수 있는 카드가 없습니다. 다른 선택을 골라주세요.</p>';
+    return;
+  }
+  choices.innerHTML = '<p class="event-subtitle">강화할 카드 종류를 선택하세요.</p>' + candidates.map(function (card) {
+    const base = CARD_LIBRARY[card.id];
+    return '<button class="event-choice card-upgrade-choice" data-card-type="' + card.id + '" type="button"><strong>' + base.name + " " + card.rank + "등급</strong><span>이 카드 1장을 " + (card.rank + 1) + "등급으로 강화</span></button>";
+  }).join("");
+  choices.querySelectorAll(".card-upgrade-choice").forEach(function (button) {
+    button.addEventListener("click", function () { upgradeCard(button.dataset.cardType); });
+  });
+}
+
+function upgradeCard(cardType) {
+  const target = gameState.hand.concat(gameState.deck).find(function (card) {
+    return card.id === cardType && card.rank < 3;
+  });
+  if (!target) return;
+  target.rank += 1;
+  finishEvent(CARD_LIBRARY[cardType].name + " 카드 1장을 " + target.rank + "등급으로 강화했습니다.");
+}
+
+function finishEvent(message) {
+  gameState.event = null;
+  completeNode(message);
   renderAll();
 }
 

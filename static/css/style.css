@@ -211,6 +211,17 @@ li .when {
 .ai-note button { width: 100%; }
 .result-panel { border-color: var(--main); }
 .result-panel h2 { margin-bottom: 8px; }
+.event-panel { border-color: #ad6b2f; background: #fffdf8; }
+.event-panel h2 { margin-bottom: 8px; }
+.event-copy { margin: 0 0 18px; color: var(--gray); font-size: 14px; line-height: 1.6; }
+.event-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.event-choice { min-height: 102px; padding: 14px; border: 1px solid #e4c99e; border-radius: 8px; background: #fff; text-align: left; }
+.event-choice:hover { border-color: #ad6b2f; background: #fff8ec; }
+.event-choice strong, .event-choice span { display: block; }
+.event-choice strong { margin-bottom: 8px; color: #8b5527; font-size: 14px; }
+.event-choice span { color: var(--gray); font-size: 12px; line-height: 1.5; }
+.event-subtitle { grid-column: 1 / -1; margin: 0; color: var(--gray); font-size: 13px; }
+.card-upgrade-choice { min-height: 82px; }
 
 @media (max-width: 760px) {
   .game-heading, .panel-title { align-items: flex-start; flex-direction: column; }
@@ -220,6 +231,7 @@ li .when {
   .map-nodes { min-width: 650px; }
   .card-hand { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .play-card { min-height: 116px; }
+  .event-choices { grid-template-columns: 1fr; }
   .battlefield { grid-template-columns: 1fr; gap: 12px; }
   .combatant.foe { flex-direction: row; text-align: left; }
   .battle-divider { order: 2; }
