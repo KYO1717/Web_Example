@@ -153,6 +153,11 @@ li .when {
 .game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; }
 .game-panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
 .game-panel h2 { margin: 0; }
+.turn-status { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.turn-status strong { font-size: 15px; }
+.turn-status span { color: var(--gray); font-size: 11px; }
+.player-turn { color: #227c9d; }
+.enemy-turn { color: #b42318; }
 .map-panel { overflow: hidden; }
 .map-nodes { display: grid; gap: 13px; margin-top: 22px; }
 .map-floor { display: grid; grid-template-columns: 44px repeat(6, minmax(70px, 1fr)); align-items: center; gap: 8px; }
@@ -164,6 +169,20 @@ li .when {
 .map-node.locked { opacity: .45; }
 .node-floor { font-size: 10px; color: var(--gray); }
 .map-node strong { font-size: 13px; }
+.battlefield { display: grid; grid-template-columns: 1fr 46px 1fr; align-items: center; gap: 14px; margin: 22px 0 16px; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(135deg, #f5fbfc, #fff8f5); }
+.combatant { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.combatant.foe { flex-direction: row-reverse; text-align: right; }
+.combatant-icon { display: grid; place-items: center; flex: 0 0 58px; height: 58px; border: 2px solid #227c9d; border-radius: 50%; color: #227c9d; background: #e5f3f6; font-size: 27px; }
+.foe .combatant-icon { border-color: #c2413b; color: #c2413b; background: #fbe8e6; }
+.combatant-info { min-width: 0; flex: 1; }
+.combatant-info strong, .combatant-info span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.combatant-info strong { margin-bottom: 5px; font-size: 14px; }
+.combatant-info span { color: var(--gray); font-size: 12px; }
+.health-bar { height: 7px; margin: 6px 0; overflow: hidden; background: #e4e4e7; border-radius: 99px; }
+.health-bar span { display: block; height: 100%; transition: width .25s ease; }
+.ally-health span { background: #227c9d; }
+.enemy-health span { background: #c2413b; }
+.battle-divider { color: var(--gray); font-size: 12px; font-weight: 700; text-align: center; }
 .enemy-hp { color: #b42318; font-size: 13px; font-weight: 700; }
 .enemy-bar { height: 8px; background: #f4dada; border-radius: 99px; margin: 16px 0; overflow: hidden; }
 .enemy-bar span { display: block; height: 100%; background: #c2413b; transition: width .25s ease; }
@@ -199,4 +218,8 @@ li .when {
   .map-nodes { min-width: 650px; }
   .card-hand { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .play-card { min-height: 116px; }
+  .battlefield { grid-template-columns: 1fr; gap: 12px; }
+  .combatant.foe { flex-direction: row; text-align: left; }
+  .battle-divider { order: 2; }
+  .foe { order: 3; }
 }

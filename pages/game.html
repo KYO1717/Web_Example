@@ -43,9 +43,32 @@
               <p class="eyebrow">ENCOUNTER</p>
               <h2 id="enemyName">기록의 잔상</h2>
             </div>
-            <span id="enemyHp" class="enemy-hp"></span>
+            <div class="turn-status">
+              <strong id="turnIndicator">아군 턴</strong>
+              <span id="turnOrder">아군 행동 → 적 행동</span>
+            </div>
           </div>
-          <div class="enemy-bar"><span id="enemyBarFill"></span></div>
+          <div class="battlefield" aria-label="전투 상황">
+            <div class="combatant ally">
+              <div class="combatant-icon">✦</div>
+              <div class="combatant-info">
+                <strong>기록자</strong>
+                <span id="playerHp">HP 30 / 30</span>
+                <div class="health-bar ally-health"><span id="playerBarFill"></span></div>
+                <span id="playerBlock">방어도 0</span>
+              </div>
+            </div>
+            <div class="battle-divider">VS</div>
+            <div class="combatant foe">
+              <div class="combatant-icon">◈</div>
+              <div class="combatant-info">
+                <strong id="enemyLabel">기록의 잔상</strong>
+                <span id="enemyHp">HP 0 / 0</span>
+                <div class="health-bar enemy-health"><span id="enemyBarFill"></span></div>
+                <span id="enemyIntent">공격 준비</span>
+              </div>
+            </div>
+          </div>
           <p id="combatLog" class="combat-log">카드를 선택해 행동하세요.</p>
 
           <div class="hand-heading">

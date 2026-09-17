@@ -162,9 +162,17 @@ function renderCombat() {
   }
   panel.hidden = false;
   document.getElementById("enemyName").textContent = gameState.combat.enemyName;
+  document.getElementById("enemyLabel").textContent = gameState.combat.enemyName;
   document.getElementById("enemyHp").textContent = gameState.combat.enemyHp + " / " + gameState.combat.enemyMaxHp;
   document.getElementById("enemyBarFill").style.width = Math.max(0, gameState.combat.enemyHp / gameState.combat.enemyMaxHp * 100) + "%";
   const playerTurn = gameState.combat.turn === "player";
+  document.getElementById("turnIndicator").textContent = playerTurn ? "아군 턴" : "적 턴";
+  document.getElementById("turnIndicator").className = playerTurn ? "player-turn" : "enemy-turn";
+  document.getElementById("turnOrder").textContent = playerTurn ? "지금 행동 → 적 행동" : "적 행동 중 → 아군 행동";
+  document.getElementById("playerHp").textContent = "HP " + gameState.hp + " / " + gameState.maxHp;
+  document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
+  document.getElementById("playerBlock").textContent = "방어도 " + gameState.combat.block;
+  document.getElementById("enemyIntent").textContent = playerTurn ? "다음 행동: 공격 " + gameState.combat.enemyDamage : "행동 중...";
   document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드 2장을 선택하면 합성됩니다." : "적의 턴입니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
   document.getElementById("fuseButton").disabled = !playerTurn || !canFuseSelection();
@@ -212,7 +220,9 @@ function fuseSelectedCards() {
   gameState.hand = gameState.hand.filter(function (card) { return !gameState.selectedCards.includes(card.uid); });
   gameState.hand.push(createCard(selected[0].id, selected[0].rank + 1));
   gameState.selectedCards = [];
-  document.getElementById("combatLog").textContent = selected[0].rank + "등급 카드 2장을 합성해 " + (selected[0].rank + 1) + "등급 카드를 만들었습니다.";
+  const actionMessage = selected[0].rank + "등급 카드 2장을 합성해 " + (selected[0].rank + 1) + "등급 카드를 만들었습니다.";
+  document.getElementById("combatLog").textContent = actionMessage + " 합성은 아군 턴 1회를 사용합니다.";
+  enemyTurn(actionMessage);
   renderAll();
 }
 
@@ -231,17 +241,17 @@ function playSelectedCard() {
   gameState.discard.push(card);
   gameState.selectedCards = [];
   checkCombatEnd();
-  if (gameState.combat) enemyTurn();
+  if (gameState.combat) enemyTurn(CARD_LIBRARY[card.id].name + " 카드를 사용했습니다.");
   renderAll();
 }
 
 function endTurn() {
   if (!gameState.combat || gameState.combat.turn !== "player") return;
-  enemyTurn();
+  enemyTurn("아무 카드도 사용하지 않고 턴을 종료했습니다.");
   renderAll();
 }
 
-function enemyTurn() {
+function enemyTurn(playerAction) {
   if (!gameState.combat) return;
   gameState.combat.turn = "enemy";
   const damage = Math.max(0, gameState.combat.enemyDamage - gameState.combat.block);
@@ -256,7 +266,7 @@ function enemyTurn() {
   }
   drawCards(5);
   gameState.combat.turn = "player";
-  document.getElementById("combatLog").textContent = "적의 턴: " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
+  document.getElementById("combatLog").textContent = playerAction + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }
 
 function checkCombatEnd() {
