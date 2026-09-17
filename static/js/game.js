@@ -5,11 +5,11 @@ const CARD_LIBRARY = {
   shield: { name: "결계", type: "defense", description: "이번 적 공격을 막을 실드를 얻습니다." },
 };
 
-const NODE_TYPES = ["battle", "event", "battle", "rest", "elite", "battle"];
+const NODE_TYPES = ["battle", "event", "battle", "shop", "elite", "battle"];
 const NODE_LABELS = {
   battle: "전투",
   event: "이벤트",
-  rest: "휴식",
+  shop: "상점",
   elite: "정예",
   boss: "보스",
 };
@@ -26,6 +26,7 @@ const gameState = {
   selectedCards: [],
   combat: null,
   event: null,
+  shop: null,
   relics: [],
   runEnded: false,
 };
@@ -55,6 +56,7 @@ function resetGame() {
   gameState.selectedCards = [];
   gameState.combat = null;
   gameState.event = null;
+  gameState.shop = null;
   gameState.relics = [];
   gameState.runEnded = false;
   document.getElementById("resultPanel").hidden = true;
@@ -91,6 +93,7 @@ function renderAll() {
   renderHand();
   renderCombat();
   renderEvent();
+  renderShop();
   renderRelics();
 }
 
@@ -128,9 +131,8 @@ function selectNode(nodeId) {
 
   if (node.type === "battle" || node.type === "elite" || node.type === "boss") {
     startCombat(node);
-  } else if (node.type === "rest") {
-    gameState.hp = Math.min(gameState.maxHp, gameState.hp + 8);
-    completeNode("휴식으로 HP를 회복했습니다.");
+  } else if (node.type === "shop") {
+    openShop();
   } else {
     openEvent();
   }
@@ -208,6 +210,96 @@ function upgradeCard(cardType) {
 function finishEvent(message) {
   gameState.event = null;
   completeNode(message);
+  renderAll();
+}
+
+function openShop() {
+  gameState.shop = { open: true, purchased: {} };
+  document.getElementById("nodeHint").textContent = "금화를 사용해 성장 요소를 구매하세요.";
+}
+
+function renderShop() {
+  const panel = document.getElementById("shopPanel");
+  const choices = document.getElementById("shopChoices");
+  if (!gameState.shop || !gameState.shop.open) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+  choices.innerHTML =
+    '<button class="shop-item" data-shop-choice="upgrade" type="button"><strong>카드 연마 · 25G</strong><span>카드 1장을 선택해 1등급 강화합니다.</span></button>' +
+    '<button class="shop-item" data-shop-choice="max-hp" type="button"><strong>생명력 증폭 · 30G</strong><span>최대 HP를 5 늘리고 현재 HP도 회복합니다.</span></button>' +
+    '<button class="shop-item" data-shop-choice="relic" type="button"><strong>유리 나침반 · 20G</strong><span>기록물을 얻어 다음 선택을 준비합니다.</span></button>' +
+    '<button class="shop-leave" data-shop-choice="leave" type="button">상점 나가기</button>';
+  choices.querySelectorAll("[data-shop-choice]").forEach(function (button) {
+    const choice = button.dataset.shopChoice;
+    const unavailable = choice !== "leave" && (gameState.shop.purchased[choice] || !canBuyShopItem(choice));
+    button.disabled = unavailable;
+    button.addEventListener("click", function () { chooseShop(choice); });
+  });
+}
+
+function shopPrice(choice) {
+  return choice === "upgrade" ? 25 : choice === "max-hp" ? 30 : 20;
+}
+
+function canBuyShopItem(choice) {
+  return gameState.gold >= shopPrice(choice);
+}
+
+function chooseShop(choice) {
+  if (!gameState.shop || !gameState.shop.open) return;
+  if (choice === "leave") {
+    gameState.shop = null;
+    completeNode("상점을 나왔습니다.");
+    renderAll();
+    return;
+  }
+  if (gameState.shop.purchased[choice] || !canBuyShopItem(choice)) return;
+  if (choice === "upgrade") {
+    showShopUpgradeChoices();
+    return;
+  }
+  gameState.gold -= shopPrice(choice);
+  gameState.shop.purchased[choice] = true;
+  if (choice === "max-hp") {
+    gameState.maxHp += 5;
+    gameState.hp = gameState.maxHp;
+    document.getElementById("shopMessage").textContent = "최대 HP가 5 증가했습니다.";
+  } else {
+    gameState.relics.push("유리 나침반");
+    document.getElementById("shopMessage").textContent = "유리 나침반을 구매했습니다.";
+  }
+  renderAll();
+}
+
+function showShopUpgradeChoices() {
+  const choices = document.getElementById("shopChoices");
+  const candidates = [];
+  gameState.hand.concat(gameState.deck).forEach(function (card) {
+    if (card.rank >= 3 || candidates.some(function (item) { return item.id === card.id; })) return;
+    candidates.push(card);
+  });
+  choices.innerHTML = '<p class="event-subtitle">25G로 강화할 카드 종류를 선택하세요.</p>' + candidates.map(function (card) {
+    const base = CARD_LIBRARY[card.id];
+    return '<button class="shop-item" data-shop-card="' + card.id + '" type="button"><strong>' + base.name + " " + card.rank + "등급</strong><span>" + (card.rank + 1) + "등급으로 강화</span></button>";
+  }).join("") + '<button class="shop-leave" data-shop-choice="back" type="button">상품 목록으로</button>';
+  choices.querySelectorAll("[data-shop-card]").forEach(function (button) {
+    button.addEventListener("click", function () { buyUpgrade(button.dataset.shopCard); });
+  });
+  choices.querySelector("[data-shop-choice=back]").addEventListener("click", renderShop);
+}
+
+function buyUpgrade(cardType) {
+  if (!canBuyShopItem("upgrade")) return;
+  const target = gameState.hand.concat(gameState.deck).find(function (card) {
+    return card.id === cardType && card.rank < 3;
+  });
+  if (!target) return;
+  target.rank += 1;
+  gameState.gold -= shopPrice("upgrade");
+  gameState.shop.purchased.upgrade = true;
+  document.getElementById("shopMessage").textContent = CARD_LIBRARY[cardType].name + " 카드를 강화했습니다.";
   renderAll();
 }
 
@@ -371,8 +463,10 @@ function enemyTurn(playerAction) {
 function checkCombatEnd() {
   if (gameState.combat.enemyHp > 0) return;
   const node = gameState.currentNode;
+  const reward = node.type === "boss" ? 40 : node.type === "elite" ? 20 : 10;
+  gameState.gold += reward;
   gameState.combat = null;
-  completeNode(node.type === "boss" ? "최종 보스를 쓰러뜨렸습니다." : "전투에서 승리했습니다.");
+  completeNode((node.type === "boss" ? "최종 보스를 쓰러뜨렸습니다." : "전투에서 승리했습니다.") + " 금화 " + reward + "G를 얻었습니다.");
   if (node.type === "boss") endRun(true, "세 층의 기록을 모두 통과했습니다.");
 }
 
