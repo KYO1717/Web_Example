@@ -79,6 +79,11 @@ async function signIn() {
 }
 
 async function signInWithGoogle() {
+  if (window.location.protocol === "file:") {
+    alert("Google 로그인은 파일을 직접 열었을 때 사용할 수 없습니다. localhost 또는 배포된 사이트에서 다시 시도하세요.");
+    return;
+  }
+
   const redirectTo = window.location.origin + "/index.html";
   const { error } = await db.auth.signInWithOAuth({
     provider: "google",
