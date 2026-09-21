@@ -82,7 +82,10 @@ async function signInWithGoogle() {
   const redirectTo = window.location.origin + "/index.html";
   const { error } = await db.auth.signInWithOAuth({
     provider: "google",
-    options: { redirectTo: redirectTo },
+    options: {
+      redirectTo: redirectTo,
+      queryParams: { prompt: "select_account" },
+    },
   });
 
   if (error) {
