@@ -75,9 +75,9 @@ function resetGame() {
 function createMap() {
   const map = [];
   const floorOptions = [
-    [["battle", "event"], ["battle", "shop"], ["event", "elite"]],
-    [["battle", "shop"], ["event", "battle"], ["elite", "event"]],
-    [["battle", "event"], ["shop", "battle"], ["elite", "battle"]],
+    [["battle", "event"], ["battle", "shop"], ["event", "elite"], ["battle", "event"], ["shop", "battle"]],
+    [["battle", "shop"], ["event", "battle"], ["elite", "event"], ["battle", "event"], ["shop", "battle"]],
+    [["battle", "event"], ["shop", "battle"], ["elite", "battle"], ["event", "battle"]],
   ];
   for (let floor = 1; floor <= 3; floor += 1) {
     const nodes = [];
@@ -87,7 +87,8 @@ function createMap() {
         nodes.push({
           id: floor + "-" + index,
           floor: floor,
-          branch: branch,
+          stage: branch,
+          option: option,
           type: type,
           cleared: false,
           locked: floor !== 1 || branch !== 0,
@@ -95,9 +96,10 @@ function createMap() {
       });
     });
     nodes.push({
-      id: floor + "-6",
+      id: floor + "-boss",
       floor: floor,
-      branch: 3,
+      stage: floorOptions[floor - 1].length,
+      option: 0,
       type: "boss",
       cleared: false,
       locked: true,
@@ -130,23 +132,32 @@ function renderStats() {
 
 function renderMap() {
   const map = document.getElementById("map");
-  map.innerHTML = gameState.map.map(function (floorNodes, floorIndex) {
-    const nodes = floorNodes.map(function (node) {
-      const stateClass = node.cleared ? "cleared" : node.locked ? "locked" : "available";
-      const branchClass = node.branch < 3 ? " branch-" + node.branch : " boss-node";
-      return '<button class="map-node ' + stateClass + branchClass + '" data-node-id="' + node.id + '" type="button" ' +
-        (node.locked || node.cleared ? "disabled" : "") + ">" +
-        '<span class="node-floor">' + node.floor + "F</span>" +
-        '<strong>' + NODE_LABELS[node.type] + "</strong></button>";
-    }).join("");
-    return '<div class="map-floor"><span class="floor-label">' + (floorIndex + 1) + "층</span>" + nodes + "</div>";
-  }).join("");
+  const floorNodes = gameState.map[gameState.floor - 1] || [];
+  const stages = [];
+  floorNodes.forEach(function (node) {
+    if (!stages[node.stage]) stages[node.stage] = [];
+    stages[node.stage].push(node);
+  });
+  map.innerHTML = '<div class="map-floor"><div class="map-floor-title"><span class="floor-label">현재 진행</span><strong>' + gameState.floor + "층 경로</strong></div>" +
+    stages.map(function (stageNodes, stageIndex) {
+      const options = stageNodes.map(renderMapNode).join("");
+      return '<div class="map-stage"><span class="stage-label">' + (stageIndex === stages.length - 1 ? "BOSS" : "경로 " + (stageIndex + 1)) + '</span><div class="map-options">' + options + "</div></div>";
+    }).join("") + "</div>";
 
   map.querySelectorAll(".map-node.available").forEach(function (button) {
     button.addEventListener("click", function () {
       selectNode(button.dataset.nodeId);
     });
   });
+}
+
+function renderMapNode(node) {
+  const stateClass = node.cleared ? "cleared" : node.locked ? "locked" : "available";
+  const bossClass = node.type === "boss" ? " boss-node" : "";
+  return '<button class="map-node ' + stateClass + bossClass + '" data-node-id="' + node.id + '" type="button" ' +
+    (node.locked || node.cleared ? "disabled" : "") + ">" +
+    '<span class="node-floor">' + (node.type === "boss" ? "최종 관문" : "선택 가능") + "</span>" +
+    '<strong>' + NODE_LABELS[node.type] + "</strong></button>";
 }
 
 function selectNode(nodeId) {
@@ -682,13 +693,13 @@ function completeNode(message) {
   const current = gameState.currentNode;
   current.cleared = true;
   gameState.map[current.floor - 1].forEach(function (node) {
-    if (node.branch === current.branch && node.id !== current.id) node.cleared = true;
-    if (node.branch === current.branch + 1) node.locked = false;
+    if (node.stage === current.stage && node.id !== current.id) node.cleared = true;
+    if (node.stage === current.stage + 1) node.locked = false;
   });
-  if (current.branch === 3 && gameState.floor < 3) {
+  if (current.type === "boss" && gameState.floor < 3) {
     gameState.floor += 1;
     gameState.map[gameState.floor - 1].forEach(function (node) {
-      if (node.branch === 0) node.locked = false;
+      if (node.stage === 0) node.locked = false;
     });
   }
   document.getElementById("nodeHint").textContent = message;
