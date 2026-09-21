@@ -128,6 +128,9 @@ function renderStats() {
   document.getElementById("floorValue").textContent = gameState.floor;
   document.getElementById("hpValue").textContent = gameState.hp + " / " + gameState.maxHp;
   document.getElementById("goldValue").textContent = gameState.gold;
+  document.querySelectorAll(".floor-dots i").forEach(function (dot, index) {
+    dot.classList.toggle("active", index < gameState.floor);
+  });
 }
 
 function renderMap() {

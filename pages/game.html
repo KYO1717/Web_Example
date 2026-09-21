@@ -17,8 +17,12 @@
         <h1>별의 기록</h1>
         <p class="muted">세 층의 기록을 지나 마지막 문을 여세요.</p>
       </div>
+      <div class="floor-progress" aria-label="현재 진행 층">
+        <span class="floor-progress-label">CURRENT FLOOR</span>
+        <strong><span id="floorValue">1</span><small> / 3</small></strong>
+        <div class="floor-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></div>
+      </div>
       <div class="run-stats">
-        <span>층 <strong id="floorValue">1</strong> / 3</span>
         <span>HP <strong id="hpValue">30 / 30</strong></span>
         <span>소지금 <strong id="goldValue">0</strong></span>
       </div>
@@ -51,7 +55,9 @@
           </div>
           <div class="battlefield" aria-label="전투 상황">
             <div class="combatant ally">
-              <div class="combatant-icon">✦</div>
+              <div class="combatant-portrait player-portrait" aria-label="기록자 캐릭터">
+                <span class="portrait-halo"></span><span class="portrait-head"></span><span class="portrait-body"></span><span class="portrait-staff">✦</span>
+              </div>
               <div class="combatant-info">
                 <strong>기록자</strong>
                 <span id="playerHp">HP 30 / 30</span>
@@ -61,7 +67,9 @@
             </div>
             <div class="battle-divider">VS</div>
             <div class="combatant foe">
-              <div class="combatant-icon">◈</div>
+              <div class="combatant-portrait foe-portrait" aria-label="적 캐릭터">
+                <span class="portrait-halo"></span><span class="portrait-head"></span><span class="portrait-body"></span><span class="portrait-staff">◈</span>
+              </div>
               <div class="combatant-info">
                 <strong id="enemyLabel">기록의 잔상</strong>
                 <span id="enemyHp">HP 0 / 0</span>
