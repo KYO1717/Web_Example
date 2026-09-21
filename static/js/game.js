@@ -1,7 +1,7 @@
 const CARD_LIBRARY = {
-  strike: { name: "섬광", type: "direct", description: "즉시 적에게 피해를 줍니다." },
+  strike: { name: "섬광", type: "direct", description: "즉시 적에게 피해를 줍니다. 지속 피해 중인 적에게 강해집니다." },
   bleed: { name: "흔적", type: "damage-over-time", description: "3턴 동안 적에게 지속 피해를 줍니다." },
-  heal: { name: "회귀", type: "heal", description: "아군 HP를 회복합니다." },
+  heal: { name: "회귀", type: "heal", description: "아군 HP를 회복합니다. 방어 중이면 회복량이 증가합니다." },
   shield: { name: "결계", type: "defense", description: "이번 적 공격을 막을 실드를 얻습니다." },
 };
 
@@ -33,6 +33,7 @@ const gameState = {
   combat: null,
   event: null,
   shop: null,
+  reward: null,
   relics: [],
   runEnded: false,
 };
@@ -64,6 +65,7 @@ function resetGame() {
   gameState.combat = null;
   gameState.event = null;
   gameState.shop = null;
+  gameState.reward = null;
   gameState.relics = [];
   gameState.runEnded = false;
   document.getElementById("resultPanel").hidden = true;
@@ -72,19 +74,34 @@ function resetGame() {
 
 function createMap() {
   const map = [];
+  const floorOptions = [
+    [["battle", "event"], ["battle", "shop"], ["event", "elite"]],
+    [["battle", "shop"], ["event", "battle"], ["elite", "event"]],
+    [["battle", "event"], ["shop", "battle"], ["elite", "battle"]],
+  ];
   for (let floor = 1; floor <= 3; floor += 1) {
-    const count = floor === 3 ? 5 : 6;
     const nodes = [];
-    for (let index = 0; index < count; index += 1) {
-      const isLast = index === count - 1;
-      nodes.push({
-        id: floor + "-" + index,
-        floor: floor,
-        type: isLast ? "boss" : NODE_TYPES[index],
-        cleared: false,
-        locked: floor !== 1 || index !== 0,
+    floorOptions[floor - 1].forEach(function (pair, branch) {
+      pair.forEach(function (type, option) {
+        const index = branch * 2 + option;
+        nodes.push({
+          id: floor + "-" + index,
+          floor: floor,
+          branch: branch,
+          type: type,
+          cleared: false,
+          locked: floor !== 1 || branch !== 0,
+        });
       });
-    }
+    });
+    nodes.push({
+      id: floor + "-6",
+      floor: floor,
+      branch: 3,
+      type: "boss",
+      cleared: false,
+      locked: true,
+    });
     map.push(nodes);
   }
   return map;
@@ -100,6 +117,7 @@ function renderAll() {
   renderHand();
   renderCombat();
   renderEvent();
+  renderReward();
   renderShop();
   renderRelics();
 }
@@ -115,7 +133,8 @@ function renderMap() {
   map.innerHTML = gameState.map.map(function (floorNodes, floorIndex) {
     const nodes = floorNodes.map(function (node) {
       const stateClass = node.cleared ? "cleared" : node.locked ? "locked" : "available";
-      return '<button class="map-node ' + stateClass + '" data-node-id="' + node.id + '" type="button" ' +
+      const branchClass = node.branch < 3 ? " branch-" + node.branch : " boss-node";
+      return '<button class="map-node ' + stateClass + branchClass + '" data-node-id="' + node.id + '" type="button" ' +
         (node.locked || node.cleared ? "disabled" : "") + ">" +
         '<span class="node-floor">' + node.floor + "F</span>" +
         '<strong>' + NODE_LABELS[node.type] + "</strong></button>";
@@ -166,6 +185,68 @@ function renderEvent() {
   choices.querySelectorAll(".event-choice").forEach(function (button) {
     button.addEventListener("click", function () { chooseEvent(button.dataset.eventChoice); });
   });
+}
+
+function renderReward() {
+  const panel = document.getElementById("rewardPanel");
+  const choices = document.getElementById("rewardChoices");
+  if (!gameState.reward) {
+    panel.hidden = true;
+    return;
+  }
+  panel.hidden = false;
+  choices.innerHTML =
+    '<button class="event-choice" data-reward-choice="upgrade" type="button"><strong>카드 강화</strong><span>카드 종류 하나의 모든 카드를 1등급 강화합니다.</span></button>' +
+    '<button class="event-choice" data-reward-choice="replace" type="button"><strong>카드 교체</strong><span>카드 종류 하나를 다른 카드 종류로 바꿔 32장 덱을 유지합니다.</span></button>';
+  choices.querySelectorAll("[data-reward-choice]").forEach(function (button) {
+    button.addEventListener("click", function () { chooseReward(button.dataset.rewardChoice); });
+  });
+}
+
+function chooseReward(choice) {
+  if (!gameState.reward) return;
+  if (choice === "upgrade") {
+    showRewardCardChoices("upgrade");
+    return;
+  }
+  showRewardCardChoices("replace");
+}
+
+function showRewardCardChoices(rewardType) {
+  const choices = document.getElementById("rewardChoices");
+  const available = [];
+  gameState.cardPool.forEach(function (card) {
+    if (available.some(function (item) { return item.id === card.id; })) return;
+    available.push(card);
+  });
+  choices.innerHTML = '<p class="event-subtitle">카드 종류를 선택하세요.</p>' + available.map(function (card) {
+    const base = CARD_LIBRARY[card.id];
+    return '<button class="event-choice card-upgrade-choice" data-reward-card="' + card.id + '" type="button"><strong>' + base.name + "</strong><span>" + (rewardType === "upgrade" ? "모든 " + base.name + " 카드를 강화" : base.name + " 카드를 다른 종류로 교체") + "</span></button>";
+  }).join("");
+  choices.querySelectorAll("[data-reward-card]").forEach(function (button) {
+    button.addEventListener("click", function () { applyReward(rewardType, button.dataset.rewardCard); });
+  });
+}
+
+function applyReward(rewardType, cardType) {
+  if (!gameState.reward) return;
+  if (rewardType === "upgrade") {
+    gameState.cardPool.forEach(function (card) {
+      if (card.id === cardType && card.rank < 3) card.rank += 1;
+    });
+    document.getElementById("nodeHint").textContent = CARD_LIBRARY[cardType].name + " 카드들이 강화되었습니다.";
+  } else {
+    const replacement = Object.keys(CARD_LIBRARY).find(function (id) { return id !== cardType; });
+    gameState.cardPool.forEach(function (card) {
+      if (card.id === cardType) {
+        card.id = replacement;
+        card.rank = 1;
+      }
+    });
+    document.getElementById("nodeHint").textContent = CARD_LIBRARY[cardType].name + " 카드를 " + CARD_LIBRARY[replacement].name + " 카드로 교체했습니다.";
+  }
+  gameState.reward = null;
+  renderAll();
 }
 
 function chooseEvent(choice) {
@@ -329,6 +410,9 @@ function startCombat(node) {
     damageOverTimeTurns: 0,
     actionsRemaining: 2,
     lastEnemyAction: "아직 행동하지 않았습니다.",
+    enemyBlock: 0,
+    enemyIntent: "attack",
+    enemyTurnCount: 0,
     turn: "player",
   };
   maintainHand();
@@ -361,7 +445,7 @@ function renderCombat() {
   document.getElementById("playerHp").textContent = "HP " + gameState.hp + " / " + gameState.maxHp;
   document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
   document.getElementById("playerBlock").textContent = "방어도 " + gameState.combat.block;
-  document.getElementById("enemyIntent").textContent = playerTurn ? "다음 행동: 공격 " + gameState.combat.enemyDamage : "행동 중...";
+  document.getElementById("enemyIntent").textContent = playerTurn ? getEnemyIntentText() : "행동 중...";
   document.getElementById("enemyAction").textContent = gameState.combat.lastEnemyAction;
   document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드가 나란히 놓이면 자동 합성 · 드래그해 수동 합성" : "적의 턴입니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
@@ -405,7 +489,7 @@ function renderHand() {
 function getCardValue(card) {
   const bonus = gameState.relics.some(function (relic) { return relic.id === "compass"; }) ? 1 : 0;
   if (card.id === "shield") return 5 * card.rank + bonus;
-  if (card.id === "heal") return 6 * card.rank + bonus;
+  if (card.id === "heal") return 6 * card.rank + bonus + (gameState.combat && gameState.combat.block > 0 ? 2 : 0);
   if (card.id === "bleed") return 3 * card.rank + bonus;
   return 7 * card.rank + bonus;
 }
@@ -511,8 +595,11 @@ function playSelectedCard() {
     gameState.combat.damageOverTimeTurns = 3;
     actionMessage = "흔적이 적에게 매 턴 " + value + " 지속 피해를 남겼습니다.";
   } else {
-    gameState.combat.enemyHp -= value;
-    actionMessage = "섬광으로 즉시 " + value + " 피해를 주었습니다.";
+    const synergyBonus = gameState.combat.damageOverTimeTurns > 0 ? 3 : 0;
+    const dealt = Math.max(0, value + synergyBonus - gameState.combat.enemyBlock);
+    gameState.combat.enemyHp -= dealt;
+    gameState.combat.enemyBlock = 0;
+    actionMessage = "섬광으로 " + dealt + " 피해를 주었습니다." + (synergyBonus ? " 지속 피해 연계 보너스!" : "");
   }
   gameState.selectedCards = [];
   checkCombatEnd();
@@ -542,10 +629,18 @@ function enemyTurn(playerAction) {
       return;
     }
   }
-  const damage = Math.max(0, gameState.combat.enemyDamage - gameState.combat.block);
-  gameState.hp -= damage;
+  const intent = gameState.combat.enemyIntent;
+  let damage = 0;
+  if (intent === "block") {
+    gameState.combat.enemyBlock = 8;
+    gameState.combat.lastEnemyAction = "방어 태세를 취해 실드 8을 얻었습니다.";
+  } else {
+    const multiplier = intent === "charge" ? 2 : 1;
+    damage = Math.max(0, gameState.combat.enemyDamage * multiplier - gameState.combat.block);
+    gameState.hp -= damage;
+    gameState.combat.lastEnemyAction = intent === "charge" ? "강공으로 " + damage + " 피해를 주었습니다." : "공격하여 " + damage + " 피해를 주었습니다.";
+  }
   gameState.combat.block = 0;
-  gameState.combat.lastEnemyAction = "공격하여 " + damage + " 피해를 주었습니다.";
   if (damageOverTimeMessage) gameState.combat.lastEnemyAction += damageOverTimeMessage;
   gameState.selectedCards = [];
   if (gameState.hp <= 0) {
@@ -553,6 +648,8 @@ function enemyTurn(playerAction) {
     return;
   }
   maintainHand();
+  gameState.combat.enemyTurnCount += 1;
+  gameState.combat.enemyIntent = ["attack", "block", "charge"][gameState.combat.enemyTurnCount % 3];
   gameState.combat.actionsRemaining = 2;
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
@@ -568,17 +665,31 @@ function checkCombatEnd() {
   const finalBoss = node.type === "boss" && node.floor === 3;
   completeNode((finalBoss ? "최종 보스를 쓰러뜨렸습니다." : node.type === "boss" ? "층의 보스를 쓰러뜨렸습니다." : "전투에서 승리했습니다.") + " 금화 " + reward + "G를 얻었습니다.");
   if (finalBoss) endRun(true, "세 층의 기록을 모두 통과했습니다.");
+  else {
+    gameState.reward = { open: true };
+    document.getElementById("nodeHint").textContent = "전투 보상을 선택하세요.";
+  }
+}
+
+function getEnemyIntentText() {
+  if (!gameState.combat) return "";
+  if (gameState.combat.enemyIntent === "block") return "다음 행동: 방어 실드 8";
+  if (gameState.combat.enemyIntent === "charge") return "다음 행동: 강공격 " + (gameState.combat.enemyDamage * 2);
+  return "다음 행동: 공격 " + gameState.combat.enemyDamage;
 }
 
 function completeNode(message) {
-  gameState.currentNode.cleared = true;
-  const next = gameState.map.flat().find(function (node) {
-    return node.floor === gameState.currentNode.floor && node.id.split("-")[1] === String(Number(gameState.currentNode.id.split("-")[1]) + 1);
+  const current = gameState.currentNode;
+  current.cleared = true;
+  gameState.map[current.floor - 1].forEach(function (node) {
+    if (node.branch === current.branch && node.id !== current.id) node.cleared = true;
+    if (node.branch === current.branch + 1) node.locked = false;
   });
-  if (next) next.locked = false;
-  else if (gameState.floor < 3) {
+  if (current.branch === 3 && gameState.floor < 3) {
     gameState.floor += 1;
-    gameState.map[gameState.floor - 1][0].locked = false;
+    gameState.map[gameState.floor - 1].forEach(function (node) {
+      if (node.branch === 0) node.locked = false;
+    });
   }
   document.getElementById("nodeHint").textContent = message;
 }

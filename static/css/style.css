@@ -169,11 +169,14 @@ li .when {
 .enemy-turn { color: #b42318; }
 .map-panel { overflow: hidden; }
 .map-nodes { display: grid; gap: 13px; margin-top: 22px; }
-.map-floor { display: grid; grid-template-columns: 44px repeat(6, minmax(70px, 1fr)); align-items: center; gap: 8px; }
+.map-floor { display: grid; grid-template-columns: 44px repeat(7, minmax(70px, 1fr)); align-items: center; gap: 8px; }
 .floor-label { color: var(--gray); font-size: 12px; }
 .map-node { min-height: 62px; padding: 8px 5px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; gap: 4px; }
 .map-node.available { border-color: var(--main); background: #f8f8ff; }
 .map-node.available:hover { transform: translateY(-2px); }
+.map-node.branch-0, .map-node.branch-1, .map-node.branch-2 { position: relative; }
+.map-node.branch-0::after, .map-node.branch-1::after, .map-node.branch-2::after { content: "선택지"; position: absolute; top: 4px; right: 5px; color: var(--gray); font-size: 9px; }
+.map-node.boss-node { border-color: #ad6b2f; }
 .map-node.cleared { background: #f4f4f5; color: var(--gray); }
 .map-node.locked { opacity: .45; }
 .node-floor { font-size: 10px; color: var(--gray); }
@@ -229,6 +232,7 @@ li .when {
 .result-panel { border-color: var(--main); }
 .result-panel h2 { margin-bottom: 8px; }
 .event-panel { border-color: #ad6b2f; background: #fffdf8; }
+.reward-panel { border-color: #6366f1; background: #fafaff; }
 .event-panel h2 { margin-bottom: 8px; }
 .event-copy { margin: 0 0 18px; color: var(--gray); font-size: 14px; line-height: 1.6; }
 .event-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -239,6 +243,7 @@ li .when {
 .event-choice span { color: var(--gray); font-size: 12px; line-height: 1.5; }
 .event-subtitle { grid-column: 1 / -1; margin: 0; color: var(--gray); font-size: 13px; }
 .card-upgrade-choice { min-height: 82px; }
+.reward-panel .event-choice { border-color: #c7c9f6; }
 .shop-panel { border-color: #227c9d; background: #f8fcfd; }
 .shop-panel h2 { margin-bottom: 8px; }
 .shop-message { margin: 0 0 14px; color: var(--gray); font-size: 13px; }
