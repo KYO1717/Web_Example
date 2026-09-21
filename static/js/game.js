@@ -577,11 +577,39 @@ function completeNode(message) {
 }
 
 function endRun(won, message) {
+  if (gameState.runEnded) return;
   gameState.runEnded = true;
+  saveGameResult(won, message);
   document.getElementById("resultTitle").textContent = won ? "기록 완료" : "기록 중단";
   document.getElementById("resultText").textContent = message;
   document.getElementById("resultPanel").hidden = false;
   gameState.combat = null;
+}
+
+function saveGameResult(won, message) {
+  if (!currentUser) return;
+  const historyKey = "archive-game-history-" + currentUser.id;
+  let history = [];
+  try {
+    history = JSON.parse(localStorage.getItem(historyKey) || "[]");
+  } catch (error) {
+    console.error("플레이 기록 저장 준비 실패:", error);
+  }
+  history.unshift({
+    won: won,
+    message: message,
+    floor: gameState.floor,
+    hp: Math.max(0, gameState.hp),
+    maxHp: gameState.maxHp,
+    gold: gameState.gold,
+    relics: gameState.relics.map(function (relic) { return RELIC_LIBRARY[relic.id].name; }),
+    playedAt: new Date().toISOString(),
+  });
+  try {
+    localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 20)));
+  } catch (error) {
+    console.error("플레이 기록 저장 실패:", error);
+  }
 }
 
 function addRelic(id) {

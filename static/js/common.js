@@ -25,7 +25,7 @@ let currentUser = null;
 const MENU = [
   { name: "홈", url: "/index.html" },
   { name: "게임", url: "/pages/game.html" },
-  { name: "내 정보", url: "/pages/mypage.html" },
+  { name: "과거 기록", url: "/pages/mypage.html" },
 ];
 
 function renderNav() {

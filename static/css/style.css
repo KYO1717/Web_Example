@@ -140,9 +140,17 @@ li .when {
   color: var(--gray);
 }
 
+.history-item { border-left: 3px solid var(--line); }
+.history-item.history-win { border-left-color: #3a8b62; }
+.history-item.history-loss { border-left-color: #c2413b; }
+.history-item > strong { display: block; margin-bottom: 6px; }
+.history-message { display: block; margin-bottom: 7px; color: var(--text); font-size: 14px; }
+.history-stats, .history-relics { display: block; font-size: 13px; }
+.history-relics { margin-top: 5px; color: var(--gray); }
+
 /* ---------- 로그라이크 게임 ---------- */
 
-.game-main { max-width: 1100px; }
+.game-main { max-width: 1440px; }
 .game-heading, .panel-title, .hand-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
 .game-heading { margin-bottom: 22px; }
 .game-heading h1 { font-size: 34px; letter-spacing: -1px; margin: 0 0 4px; }
@@ -150,7 +158,7 @@ li .when {
 .muted { color: var(--gray); font-size: 13px; }
 .run-stats { display: flex; gap: 16px; flex-wrap: wrap; color: var(--gray); font-size: 13px; }
 .run-stats strong { color: var(--text); }
-.game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; }
+.game-layout { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 16px; }
 .game-panel { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
 .game-panel h2 { margin: 0; }
 .turn-status { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
@@ -194,8 +202,8 @@ li .when {
 .combat-log { min-height: 21px; color: var(--gray); font-size: 14px; }
 .hand-heading { align-items: center; margin-top: 22px; }
 .hand-heading h3 { margin: 0; font-size: 15px; }
-.card-hand { display: flex; gap: 9px; margin: 12px 0 16px; overflow-x: auto; padding: 4px 2px 8px; }
-.play-card { flex: 0 0 118px; min-height: 130px; padding: 12px 9px; border: 1px solid #d4d4d8; border-radius: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; cursor: grab; }
+.card-hand { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px; margin: 12px 0 16px; padding: 4px 2px 8px; }
+.play-card { min-width: 0; min-height: 130px; padding: 12px 8px; border: 1px solid #d4d4d8; border-radius: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; cursor: grab; }
 .play-card:active { cursor: grabbing; }
 .play-card.drag-over { border-color: #ad6b2f; background: #fff8ec; transform: translateY(-3px); }
 .play-card:hover, .play-card.selected { border-color: var(--main); background: #f8f8ff; }
@@ -249,8 +257,8 @@ li .when {
   .game-layout { grid-template-columns: 1fr; }
   .map-panel { overflow-x: auto; }
   .map-nodes { min-width: 650px; }
-  .card-hand { gap: 7px; }
-  .play-card { flex-basis: 112px; min-height: 116px; }
+  .card-hand { display: flex; gap: 7px; overflow-x: auto; }
+  .play-card { flex: 0 0 112px; min-height: 116px; }
   .event-choices { grid-template-columns: 1fr; }
   .shop-choices { grid-template-columns: 1fr; }
   .battlefield { grid-template-columns: 1fr; gap: 12px; }

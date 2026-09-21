@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>내 정보</title>
+  <title>과거 기록</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body data-require-auth="true">
@@ -11,15 +11,15 @@
   <header id="nav"></header>
 
   <main>
-    <h1>내 정보</h1>
+    <h1>과거 기록</h1>
 
     <section class="card">
       <p>이메일: <strong id="myEmail"></strong></p>
-      <p>내가 쓴 글: <strong id="myCount">-</strong>개</p>
+      <p>플레이 기록: <strong id="historyCount">-</strong>회</p>
     </section>
 
-    <h2>내가 쓴 글</h2>
-    <ul id="myList"></ul>
+    <h2>이전 플레이 결과</h2>
+    <ul id="historyList"></ul>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
