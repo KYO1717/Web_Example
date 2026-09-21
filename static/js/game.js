@@ -551,6 +551,7 @@ function fuseCards(sourceUid, targetUid) {
 
 function resolveAutomaticFusions() {
   let didFuse = true;
+  let didFuseAny = false;
   while (didFuse) {
     didFuse = false;
     for (let index = 0; index < gameState.hand.length - 1; index += 1) {
@@ -559,9 +560,11 @@ function resolveAutomaticFusions() {
       if (!canFuseCards(first, second)) continue;
       gameState.hand.splice(index, 2, createCard(first.id, first.rank + 1));
       didFuse = true;
+      didFuseAny = true;
       break;
     }
   }
+  return didFuseAny;
 }
 
 function refillHand() {
@@ -569,12 +572,12 @@ function refillHand() {
 }
 
 function maintainHand() {
-  let previousLength = -1;
-  while (gameState.hand.length !== previousLength) {
-    previousLength = gameState.hand.length;
-    resolveAutomaticFusions();
+  let changed = true;
+  while (changed) {
+    changed = resolveAutomaticFusions();
+    const handLength = gameState.hand.length;
     refillHand();
-    if (gameState.deck.length === 0) break;
+    if (gameState.hand.length !== handLength) changed = true;
   }
 }
 
