@@ -320,6 +320,8 @@ function startCombat(node) {
     block: 0,
     damageOverTime: 0,
     damageOverTimeTurns: 0,
+    actionsRemaining: 2,
+    lastEnemyAction: "아직 행동하지 않았습니다.",
     turn: "player",
   };
   maintainHand();
@@ -347,13 +349,16 @@ function renderCombat() {
   const playerTurn = gameState.combat.turn === "player";
   document.getElementById("turnIndicator").textContent = playerTurn ? "아군 턴" : "적 턴";
   document.getElementById("turnIndicator").className = playerTurn ? "player-turn" : "enemy-turn";
-  document.getElementById("turnOrder").textContent = playerTurn ? "지금 행동 → 적 행동" : "적 행동 중 → 아군 행동";
+  document.getElementById("actionCounter").textContent = playerTurn ? "행동 " + gameState.combat.actionsRemaining + " / 2" : "적 행동 중";
+  document.getElementById("turnOrder").textContent = playerTurn ? "행동 2회 후 적 행동" : "적 행동이 끝나면 아군 행동";
   document.getElementById("playerHp").textContent = "HP " + gameState.hp + " / " + gameState.maxHp;
   document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
   document.getElementById("playerBlock").textContent = "방어도 " + gameState.combat.block;
   document.getElementById("enemyIntent").textContent = playerTurn ? "다음 행동: 공격 " + gameState.combat.enemyDamage : "행동 중...";
+  document.getElementById("enemyAction").textContent = gameState.combat.lastEnemyAction;
   document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드가 나란히 놓이면 자동 합성 · 드래그해 수동 합성" : "적의 턴입니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
+  document.getElementById("endTurnButton").disabled = !playerTurn;
 }
 
 function renderHand() {
@@ -438,7 +443,7 @@ function fuseCards(sourceUid, targetUid) {
   gameState.selectedCards = [];
   const actionMessage = source.rank + "등급 카드 2장을 합성해 " + (source.rank + 1) + "등급 카드를 만들었습니다.";
   maintainHand();
-  document.getElementById("combatLog").textContent = actionMessage;
+  completePlayerAction(actionMessage);
   renderAll();
 }
 
@@ -471,29 +476,43 @@ function maintainHand() {
   }
 }
 
+function completePlayerAction(actionMessage) {
+  if (!gameState.combat) return;
+  gameState.combat.actionsRemaining -= 1;
+  if (gameState.combat.actionsRemaining <= 0) {
+    enemyTurn(actionMessage);
+    return;
+  }
+  document.getElementById("combatLog").textContent = actionMessage + " 플레이어 행동이 1회 남았습니다.";
+}
+
 function playSelectedCard() {
   if (gameState.selectedCards.length !== 1 || !gameState.combat || gameState.combat.turn !== "player") return;
   const index = gameState.hand.findIndex(function (card) { return card.uid === gameState.selectedCards[0]; });
   const card = gameState.hand.splice(index, 1)[0];
   const value = getCardValue(card);
+  let actionMessage = "";
   if (card.id === "shield") {
     gameState.combat.block += value;
-    document.getElementById("combatLog").textContent = "결계로 실드 " + value + "을 얻었습니다.";
+    actionMessage = "결계로 실드 " + value + "을 얻었습니다.";
   } else if (card.id === "heal") {
     const healed = Math.min(value, gameState.maxHp - gameState.hp);
     gameState.hp += healed;
-    document.getElementById("combatLog").textContent = "회귀로 HP를 " + healed + " 회복했습니다.";
+    actionMessage = "회귀로 HP를 " + healed + " 회복했습니다.";
   } else if (card.id === "bleed") {
     gameState.combat.damageOverTime = value;
     gameState.combat.damageOverTimeTurns = 3;
-    document.getElementById("combatLog").textContent = "흔적이 적에게 매 턴 " + value + " 지속 피해를 남겼습니다.";
+    actionMessage = "흔적이 적에게 매 턴 " + value + " 지속 피해를 남겼습니다.";
   } else {
     gameState.combat.enemyHp -= value;
-    document.getElementById("combatLog").textContent = "섬광으로 즉시 " + value + " 피해를 주었습니다.";
+    actionMessage = "섬광으로 즉시 " + value + " 피해를 주었습니다.";
   }
   gameState.selectedCards = [];
   checkCombatEnd();
-  if (gameState.combat) enemyTurn(CARD_LIBRARY[card.id].name + " 카드를 사용했습니다.");
+  if (gameState.combat) {
+    maintainHand();
+    completePlayerAction(actionMessage);
+  }
   renderAll();
 }
 
@@ -519,12 +538,15 @@ function enemyTurn(playerAction) {
   const damage = Math.max(0, gameState.combat.enemyDamage - gameState.combat.block);
   gameState.hp -= damage;
   gameState.combat.block = 0;
+  gameState.combat.lastEnemyAction = "공격하여 " + damage + " 피해를 주었습니다.";
+  if (damageOverTimeMessage) gameState.combat.lastEnemyAction += damageOverTimeMessage;
   gameState.selectedCards = [];
   if (gameState.hp <= 0) {
     endRun(false, "기록이 여기서 끝났습니다.");
     return;
   }
   maintainHand();
+  gameState.combat.actionsRemaining = 2;
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }

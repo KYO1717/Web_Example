@@ -156,6 +156,7 @@ li .when {
 .turn-status { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .turn-status strong { font-size: 15px; }
 .turn-status span { color: var(--gray); font-size: 11px; }
+.turn-status #actionCounter { color: var(--main); font-weight: 700; }
 .player-turn { color: #227c9d; }
 .enemy-turn { color: #b42318; }
 .map-panel { overflow: hidden; }
@@ -178,6 +179,10 @@ li .when {
 .combatant-info strong, .combatant-info span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .combatant-info strong { margin-bottom: 5px; font-size: 14px; }
 .combatant-info span { color: var(--gray); font-size: 12px; }
+.enemy-action-status { margin-top: 9px; padding-top: 8px; border-top: 1px solid #f1d0cd; }
+.enemy-action-status small, .enemy-action-status strong { display: block; }
+.enemy-action-status small { color: #a1625e; font-size: 10px; }
+.enemy-action-status strong { margin-top: 3px; color: #9f3029; font-size: 12px; white-space: normal; }
 .health-bar { height: 7px; margin: 6px 0; overflow: hidden; background: #e4e4e7; border-radius: 99px; }
 .health-bar span { display: block; height: 100%; transition: width .25s ease; }
 .ally-health span { background: #227c9d; }
