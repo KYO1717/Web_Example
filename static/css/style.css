@@ -189,8 +189,10 @@ li .when {
 .combat-log { min-height: 21px; color: var(--gray); font-size: 14px; }
 .hand-heading { align-items: center; margin-top: 22px; }
 .hand-heading h3 { margin: 0; font-size: 15px; }
-.card-hand { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 12px 0 16px; }
-.play-card { min-height: 130px; padding: 12px 9px; border: 1px solid #d4d4d8; border-radius: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; }
+.card-hand { display: flex; gap: 9px; margin: 12px 0 16px; overflow-x: auto; padding: 4px 2px 8px; }
+.play-card { flex: 0 0 118px; min-height: 130px; padding: 12px 9px; border: 1px solid #d4d4d8; border-radius: 8px; display: flex; flex-direction: column; align-items: flex-start; gap: 7px; text-align: left; cursor: grab; }
+.play-card:active { cursor: grabbing; }
+.play-card.drag-over { border-color: #ad6b2f; background: #fff8ec; transform: translateY(-3px); }
 .play-card:hover, .play-card.selected { border-color: var(--main); background: #f8f8ff; }
 .play-card strong { font-size: 15px; }
 .play-card span { font-size: 12px; }
@@ -242,8 +244,8 @@ li .when {
   .game-layout { grid-template-columns: 1fr; }
   .map-panel { overflow-x: auto; }
   .map-nodes { min-width: 650px; }
-  .card-hand { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .play-card { min-height: 116px; }
+  .card-hand { gap: 7px; }
+  .play-card { flex-basis: 112px; min-height: 116px; }
   .event-choices { grid-template-columns: 1fr; }
   .shop-choices { grid-template-columns: 1fr; }
   .battlefield { grid-template-columns: 1fr; gap: 12px; }

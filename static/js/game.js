@@ -322,7 +322,7 @@ function startCombat(node) {
     damageOverTimeTurns: 0,
     turn: "player",
   };
-  drawCards(Math.max(0, 8 - gameState.hand.length));
+  maintainHand();
 }
 
 function drawCards(amount) {
@@ -352,9 +352,8 @@ function renderCombat() {
   document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
   document.getElementById("playerBlock").textContent = "방어도 " + gameState.combat.block;
   document.getElementById("enemyIntent").textContent = playerTurn ? "다음 행동: 공격 " + gameState.combat.enemyDamage : "행동 중...";
-  document.getElementById("selectionHint").textContent = playerTurn ? "손패 8장 · 사용한 만큼 남은 덱에서 랜덤 보충" : "적의 턴입니다.";
+  document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드가 나란히 놓이면 자동 합성 · 드래그해 수동 합성" : "적의 턴입니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
-  document.getElementById("fuseButton").disabled = !playerTurn || !canFuseSelection();
 }
 
 function renderHand() {
@@ -362,7 +361,7 @@ function renderHand() {
   hand.innerHTML = gameState.hand.map(function (card) {
     const base = CARD_LIBRARY[card.id];
     const selected = gameState.selectedCards.includes(card.uid) ? " selected" : "";
-    return '<button class="play-card ' + base.type + selected + '" data-card-id="' + card.uid + '" type="button">' +
+    return '<button class="play-card ' + base.type + selected + '" data-card-id="' + card.uid + '" type="button" draggable="true" aria-label="' + base.name + " " + card.rank + "등급 카드. 드래그해 합성" + '" title="카드를 끌어 같은 카드 위에 놓아 합성">' +
       '<span class="card-rank">' + card.rank + "등급</span>" +
       '<strong>' + base.name + "</strong>" +
       '<span>' + getCardValue(card) + " 효과</span>" +
@@ -370,6 +369,24 @@ function renderHand() {
   }).join("");
   hand.querySelectorAll(".play-card").forEach(function (button) {
     button.addEventListener("click", function () { toggleCard(button.dataset.cardId); });
+    button.addEventListener("dragstart", function (event) {
+      if (!gameState.combat || gameState.combat.turn !== "player") {
+        event.preventDefault();
+        return;
+      }
+      event.dataTransfer.setData("text/plain", button.dataset.cardId);
+      event.dataTransfer.effectAllowed = "move";
+    });
+    button.addEventListener("dragover", function (event) {
+      event.preventDefault();
+      button.classList.add("drag-over");
+    });
+    button.addEventListener("dragleave", function () { button.classList.remove("drag-over"); });
+    button.addEventListener("drop", function (event) {
+      event.preventDefault();
+      button.classList.remove("drag-over");
+      fuseCards(event.dataTransfer.getData("text/plain"), button.dataset.cardId);
+    });
   });
 }
 
@@ -397,16 +414,61 @@ function canFuseSelection() {
   return selected[0].id === selected[1].id && selected[0].rank === selected[1].rank && selected[0].rank < 3;
 }
 
-function fuseSelectedCards() {
-  if (!gameState.combat || gameState.combat.turn !== "player" || !canFuseSelection()) return;
-  const selected = gameState.hand.filter(function (card) { return gameState.selectedCards.includes(card.uid); });
-  gameState.hand = gameState.hand.filter(function (card) { return !gameState.selectedCards.includes(card.uid); });
-  gameState.hand.push(createCard(selected[0].id, selected[0].rank + 1));
+function canFuseCards(first, second) {
+  return first && second && first.uid !== second.uid && first.id === second.id && first.rank === second.rank && first.rank < 3;
+}
+
+function fuseCards(sourceUid, targetUid) {
+  if (!gameState.combat || gameState.combat.turn !== "player") return;
+  const sourceIndex = gameState.hand.findIndex(function (card) { return card.uid === sourceUid; });
+  const targetIndex = gameState.hand.findIndex(function (card) { return card.uid === targetUid; });
+  if (sourceIndex < 0 || targetIndex < 0) {
+    document.getElementById("combatLog").textContent = "합성할 카드를 찾을 수 없습니다.";
+    return;
+  }
+  const source = gameState.hand[sourceIndex];
+  const target = gameState.hand[targetIndex];
+  if (!canFuseCards(source, target)) {
+    document.getElementById("combatLog").textContent = "같은 종류와 등급의 카드만 합성할 수 있습니다.";
+    return;
+  }
+  const insertIndex = Math.min(sourceIndex, targetIndex);
+  gameState.hand.splice(Math.max(sourceIndex, targetIndex), 1);
+  gameState.hand.splice(insertIndex, 1, createCard(source.id, source.rank + 1));
   gameState.selectedCards = [];
-  const actionMessage = selected[0].rank + "등급 카드 2장을 합성해 " + (selected[0].rank + 1) + "등급 카드를 만들었습니다.";
-  document.getElementById("combatLog").textContent = actionMessage + " 합성은 아군 턴 1회를 사용합니다.";
-  enemyTurn(actionMessage);
+  const actionMessage = source.rank + "등급 카드 2장을 합성해 " + (source.rank + 1) + "등급 카드를 만들었습니다.";
+  maintainHand();
+  document.getElementById("combatLog").textContent = actionMessage;
   renderAll();
+}
+
+function resolveAutomaticFusions() {
+  let didFuse = true;
+  while (didFuse) {
+    didFuse = false;
+    for (let index = 0; index < gameState.hand.length - 1; index += 1) {
+      const first = gameState.hand[index];
+      const second = gameState.hand[index + 1];
+      if (!canFuseCards(first, second)) continue;
+      gameState.hand.splice(index, 2, createCard(first.id, first.rank + 1));
+      didFuse = true;
+      break;
+    }
+  }
+}
+
+function refillHand() {
+  drawCards(Math.max(0, 8 - gameState.hand.length));
+}
+
+function maintainHand() {
+  let previousLength = -1;
+  while (gameState.hand.length !== previousLength) {
+    previousLength = gameState.hand.length;
+    resolveAutomaticFusions();
+    refillHand();
+    if (gameState.deck.length === 0) break;
+  }
 }
 
 function playSelectedCard() {
@@ -462,7 +524,7 @@ function enemyTurn(playerAction) {
     endRun(false, "기록이 여기서 끝났습니다.");
     return;
   }
-  drawCards(Math.max(0, 8 - gameState.hand.length));
+  maintainHand();
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }
@@ -525,7 +587,6 @@ async function requestArchiveNote() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("fuseButton").addEventListener("click", fuseSelectedCards);
   document.getElementById("playButton").addEventListener("click", playSelectedCard);
   document.getElementById("endTurnButton").addEventListener("click", endTurn);
   document.getElementById("restartButton").addEventListener("click", resetGame);
