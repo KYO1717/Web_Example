@@ -26,6 +26,7 @@ const gameState = {
   gold: 0,
   map: [],
   currentNode: null,
+  cardPool: [],
   deck: [],
   hand: [],
   selectedCards: [],
@@ -47,7 +48,7 @@ function resetGame() {
   gameState.gold = 0;
   gameState.map = createMap();
   gameState.currentNode = null;
-  gameState.deck = [
+  gameState.cardPool = [
     createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
     createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
     createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1),
@@ -57,6 +58,7 @@ function resetGame() {
     createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
     createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
   ];
+  gameState.deck = [];
   gameState.hand = [];
   gameState.selectedCards = [];
   gameState.combat = null;
@@ -186,7 +188,7 @@ function chooseEvent(choice) {
 function showUpgradeChoices() {
   const choices = document.getElementById("eventChoices");
   const candidates = [];
-  gameState.hand.concat(gameState.deck).forEach(function (card) {
+  gameState.cardPool.forEach(function (card) {
     if (card.rank >= 3 || candidates.some(function (item) { return item.id === card.id; })) return;
     candidates.push(card);
   });
@@ -204,7 +206,7 @@ function showUpgradeChoices() {
 }
 
 function upgradeCard(cardType) {
-  const target = gameState.hand.concat(gameState.deck).find(function (card) {
+  const target = gameState.cardPool.find(function (card) {
     return card.id === cardType && card.rank < 3;
   });
   if (!target) return;
@@ -281,7 +283,7 @@ function chooseShop(choice) {
 function showShopUpgradeChoices() {
   const choices = document.getElementById("shopChoices");
   const candidates = [];
-  gameState.hand.concat(gameState.deck).forEach(function (card) {
+  gameState.cardPool.forEach(function (card) {
     if (card.rank >= 3 || candidates.some(function (item) { return item.id === card.id; })) return;
     candidates.push(card);
   });
@@ -297,7 +299,7 @@ function showShopUpgradeChoices() {
 
 function buyUpgrade(cardType) {
   if (!canBuyShopItem("upgrade")) return;
-  const target = gameState.hand.concat(gameState.deck).find(function (card) {
+  const target = gameState.cardPool.find(function (card) {
     return card.id === cardType && card.rank < 3;
   });
   if (!target) return;
@@ -312,6 +314,11 @@ function startCombat(node) {
   const boss = node.type === "boss";
   const firstFloorBoss = boss && node.floor === 1;
   gameState.hp = gameState.maxHp;
+  gameState.deck = gameState.cardPool.map(function (card) {
+    return createCard(card.id, card.rank);
+  });
+  gameState.hand = [];
+  gameState.selectedCards = [];
   gameState.combat = {
     enemyName: boss ? (firstFloorBoss ? "첫 기록의 관리자" : "층의 관리자") : node.type === "elite" ? "깊은 기록의 사냥꾼" : "기록의 잔상",
     enemyHp: firstFloorBoss ? 32 : boss ? 45 : node.type === "elite" ? 28 : 18,
