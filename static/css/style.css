@@ -197,6 +197,7 @@ li .when {
 .combatant { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .combatant.foe { flex-direction: row-reverse; text-align: right; }
 .combatant-portrait { position: relative; flex: 0 0 92px; height: 112px; overflow: hidden; border-radius: 12px 12px 8px 8px; border: 1px solid #a8d4dc; background: linear-gradient(160deg, #dff5f3, #f8ffff); box-shadow: inset 0 -14px 20px rgba(34, 124, 157, .12); }
+.combatant-portrait img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .foe-portrait { border-color: #e5aaa5; background: linear-gradient(160deg, #fff0ed, #fffafa); box-shadow: inset 0 -14px 20px rgba(194, 65, 59, .12); }
 .portrait-halo { position: absolute; top: 12px; left: 50%; width: 50px; height: 50px; transform: translateX(-50%); border: 1px solid rgba(34, 124, 157, .3); border-radius: 50%; }
 .foe-portrait .portrait-halo { border-color: rgba(194, 65, 59, .3); }
