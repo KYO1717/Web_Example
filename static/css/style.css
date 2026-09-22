@@ -252,6 +252,14 @@ li .when {
 .ai-note button { width: 100%; }
 .result-panel { border-color: var(--main); }
 .result-panel h2 { margin-bottom: 8px; }
+.difficulty-panel { border-color: #ad6b2f; background: #fffdf8; }
+.difficulty-panel h2 { margin-bottom: 8px; }
+.difficulty-choices { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.difficulty-choice { min-height: 120px; padding: 12px; border: 1px solid #e4c99e; border-radius: 8px; background: #fff; text-align: left; }
+.difficulty-choice:hover { border-color: #ad6b2f; background: #fff8ec; }
+.difficulty-choice strong, .difficulty-choice span { display: block; }
+.difficulty-choice strong { margin-bottom: 8px; color: #8b5527; font-size: 13px; }
+.difficulty-choice span { color: var(--gray); font-size: 11px; line-height: 1.5; }
 .event-panel { border-color: #ad6b2f; background: #fffdf8; }
 .reward-panel { border-color: #6366f1; background: #fafaff; }
 .event-panel h2 { margin-bottom: 8px; }
@@ -290,6 +298,7 @@ li .when {
   .card-hand { display: flex; gap: 7px; overflow-x: auto; }
   .play-card { flex: 0 0 112px; min-height: 116px; }
   .event-choices { grid-template-columns: 1fr; }
+  .difficulty-choices { grid-template-columns: 1fr; }
   .shop-choices { grid-template-columns: 1fr; }
   .battlefield { grid-template-columns: 1fr; gap: 12px; }
   .combatant-portrait { flex-basis: 78px; height: 96px; }

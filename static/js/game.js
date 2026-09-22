@@ -14,9 +14,21 @@ const NODE_LABELS = {
   boss: "보스",
 };
 
+const DIFFICULTIES = {
+  1: { name: "I · 견습 기록자", description: "기본 난이도. 기록의 규칙을 익히기 좋습니다.", enemyHp: 1, enemyDamage: 1, reward: 1, curseChance: 0 },
+  2: { name: "II · 잔잔한 파문", description: "적의 체력과 공격력이 조금 올라갑니다.", enemyHp: 1.15, enemyDamage: 1.1, reward: 1.15, curseChance: 0 },
+  3: { name: "III · 뒤틀린 문장", description: "전투가 거칠어지고 불리한 기록물이 등장합니다.", enemyHp: 1.3, enemyDamage: 1.2, reward: 1.3, curseChance: .35 },
+  4: { name: "IV · 붕괴 직전", description: "강한 적과 저주가 여정 전체를 압박합니다.", enemyHp: 1.5, enemyDamage: 1.35, reward: 1.5, curseChance: .6 },
+  5: { name: "V · 금지된 원본", description: "가장 위험한 기록. 큰 보상과 큰 대가가 기다립니다.", enemyHp: 1.75, enemyDamage: 1.55, reward: 1.8, curseChance: .85 },
+};
+
 const RELIC_LIBRARY = {
   starMap: { name: "낡은 별 지도", description: "전투 승리 금화 +5" },
   compass: { name: "유리 나침반", description: "모든 카드 효과 +1" },
+  archiveKey: { name: "봉인된 색인", description: "전투 시작 시 금화 5를 얻습니다." },
+  inkStain: { name: "번진 잉크", description: "전투 시작 시 HP를 3 잃습니다. (저주)" },
+  crackedSeal: { name: "금이 간 봉인", description: "적의 공격력이 2 증가합니다. (저주)" },
+  missingPage: { name: "사라진 페이지", description: "전투마다 첫 턴 행동 횟수가 1회 줄어듭니다. (저주)" },
 };
 
 const gameState = {
@@ -35,6 +47,7 @@ const gameState = {
   shop: null,
   reward: null,
   relics: [],
+  difficulty: null,
   runEnded: false,
 };
 
@@ -42,7 +55,9 @@ function createCard(id, rank) {
   return { id: id, rank: rank, uid: id + "-" + rank + "-" + Math.random().toString(36).slice(2) };
 }
 
-function resetGame() {
+function resetGame(difficultyId) {
+  const difficulty = DIFFICULTIES[difficultyId] || DIFFICULTIES[1];
+  gameState.difficulty = Number(difficultyId) || 1;
   gameState.floor = 1;
   gameState.hp = 30;
   gameState.maxHp = 30;
@@ -69,6 +84,25 @@ function resetGame() {
   gameState.relics = [];
   gameState.runEnded = false;
   document.getElementById("resultPanel").hidden = true;
+  document.getElementById("difficultyPanel").hidden = true;
+  renderAll();
+}
+
+function showDifficultySelect() {
+  gameState.combat = null;
+  gameState.event = null;
+  gameState.reward = null;
+  gameState.shop = null;
+  document.getElementById("difficultyPanel").hidden = false;
+  document.getElementById("resultPanel").hidden = true;
+  const choices = document.getElementById("difficultyChoices");
+  choices.innerHTML = Object.keys(DIFFICULTIES).map(function (id) {
+    const difficulty = DIFFICULTIES[id];
+    return '<button class="difficulty-choice" data-difficulty="' + id + '" type="button"><strong>' + difficulty.name + '</strong><span>' + difficulty.description + '</span></button>';
+  }).join("");
+  choices.querySelectorAll("[data-difficulty]").forEach(function (button) {
+    button.addEventListener("click", function () { resetGame(button.dataset.difficulty); });
+  });
   renderAll();
 }
 
@@ -110,7 +144,7 @@ function createMap() {
 }
 
 function onAuthReady() {
-  resetGame();
+  showDifficultySelect();
 }
 
 function renderAll() {
@@ -276,8 +310,9 @@ function chooseEvent(choice) {
     return;
   }
   gameState.gold += 25;
-  addRelic("starMap");
-  finishEvent("금화 25와 낡은 별 지도를 얻었습니다.");
+  const relicId = getEventRelic();
+  addRelic(relicId);
+  finishEvent("금화 25와 " + RELIC_LIBRARY[relicId].name + "을(를) 얻었습니다. " + RELIC_LIBRARY[relicId].description);
 }
 
 function showUpgradeChoices() {
@@ -406,6 +441,7 @@ function buyUpgrade(cardType) {
 }
 
 function startCombat(node) {
+  const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
   const boss = node.type === "boss";
   const firstFloorBoss = boss && node.floor === 1;
   gameState.hp = gameState.maxHp;
@@ -414,21 +450,25 @@ function startCombat(node) {
   });
   gameState.hand = [];
   gameState.selectedCards = [];
+  const baseHp = firstFloorBoss ? 32 : boss ? 45 : node.type === "elite" ? 28 : 18;
+  const baseDamage = firstFloorBoss ? 5 : boss ? 8 : node.type === "elite" ? 6 : 4;
   gameState.combat = {
     enemyName: boss ? (firstFloorBoss ? "첫 기록의 관리자" : "층의 관리자") : node.type === "elite" ? "깊은 기록의 사냥꾼" : "기록의 잔상",
-    enemyHp: firstFloorBoss ? 32 : boss ? 45 : node.type === "elite" ? 28 : 18,
-    enemyMaxHp: firstFloorBoss ? 32 : boss ? 45 : node.type === "elite" ? 28 : 18,
-    enemyDamage: firstFloorBoss ? 5 : boss ? 8 : node.type === "elite" ? 6 : 4,
+    enemyHp: Math.round(baseHp * difficulty.enemyHp),
+    enemyMaxHp: Math.round(baseHp * difficulty.enemyHp),
+    enemyDamage: Math.round(baseDamage * difficulty.enemyDamage),
     block: 0,
     damageOverTime: 0,
     damageOverTimeTurns: 0,
-    actionsRemaining: 2,
+    actionsRemaining: hasRelic("missingPage") ? 1 : 2,
     lastEnemyAction: "아직 행동하지 않았습니다.",
     enemyBlock: 0,
     enemyIntent: "attack",
     enemyTurnCount: 0,
     turn: "player",
   };
+  if (hasRelic("inkStain")) gameState.hp = Math.max(1, gameState.hp - 3);
+  if (hasRelic("archiveKey")) gameState.gold += 5;
   maintainHand();
 }
 
@@ -653,7 +693,8 @@ function enemyTurn(playerAction) {
     gameState.combat.lastEnemyAction = "방어 태세를 취해 실드 8을 얻었습니다.";
   } else {
     const multiplier = intent === "charge" ? 2 : 1;
-    damage = Math.max(0, gameState.combat.enemyDamage * multiplier - gameState.combat.block);
+    const curseBonus = hasRelic("crackedSeal") ? 2 : 0;
+    damage = Math.max(0, (gameState.combat.enemyDamage + curseBonus) * multiplier - gameState.combat.block);
     gameState.hp -= damage;
     gameState.combat.lastEnemyAction = intent === "charge" ? "강공으로 " + damage + " 피해를 주었습니다." : "공격하여 " + damage + " 피해를 주었습니다.";
   }
@@ -667,7 +708,7 @@ function enemyTurn(playerAction) {
   maintainHand();
   gameState.combat.enemyTurnCount += 1;
   gameState.combat.enemyIntent = ["attack", "block", "charge"][gameState.combat.enemyTurnCount % 3];
-  gameState.combat.actionsRemaining = 2;
+  gameState.combat.actionsRemaining = hasRelic("missingPage") ? 1 : 2;
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 적의 공격으로 " + damage + " 피해를 받았습니다. 다시 아군의 턴입니다.";
 }
@@ -675,7 +716,8 @@ function enemyTurn(playerAction) {
 function checkCombatEnd() {
   if (gameState.combat.enemyHp > 0) return;
   const node = gameState.currentNode;
-  const reward = (node.type === "boss" ? 40 : node.type === "elite" ? 20 : 10) +
+  const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+  const reward = Math.round((node.type === "boss" ? 40 : node.type === "elite" ? 20 : 10) * difficulty.reward) +
     (gameState.relics.some(function (relic) { return relic.id === "starMap"; }) ? 5 : 0);
   gameState.gold += reward;
   gameState.combat = null;
@@ -690,9 +732,10 @@ function checkCombatEnd() {
 
 function getEnemyIntentText() {
   if (!gameState.combat) return "";
+  const curseBonus = hasRelic("crackedSeal") ? 2 : 0;
   if (gameState.combat.enemyIntent === "block") return "다음 행동: 방어 실드 8";
-  if (gameState.combat.enemyIntent === "charge") return "다음 행동: 강공격 " + (gameState.combat.enemyDamage * 2);
-  return "다음 행동: 공격 " + gameState.combat.enemyDamage;
+  if (gameState.combat.enemyIntent === "charge") return "다음 행동: 강공격 " + ((gameState.combat.enemyDamage + curseBonus) * 2);
+  return "다음 행동: 공격 " + (gameState.combat.enemyDamage + curseBonus);
 }
 
 function completeNode(message) {
@@ -733,6 +776,7 @@ function saveGameResult(won, message) {
   history.unshift({
     won: won,
     message: message,
+    difficulty: DIFFICULTIES[gameState.difficulty].name,
     floor: gameState.floor,
     hp: Math.max(0, gameState.hp),
     maxHp: gameState.maxHp,
@@ -750,6 +794,19 @@ function saveGameResult(won, message) {
 function addRelic(id) {
   if (gameState.relics.some(function (relic) { return relic.id === id; })) return;
   gameState.relics.push({ id: id });
+}
+
+function hasRelic(id) {
+  return gameState.relics.some(function (relic) { return relic.id === id; });
+}
+
+function getEventRelic() {
+  const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+  const cursed = ["inkStain", "crackedSeal", "missingPage"];
+  const helpful = ["starMap", "compass", "archiveKey"];
+  const pool = Math.random() < difficulty.curseChance ? cursed : helpful;
+  const available = pool.filter(function (id) { return !hasRelic(id); });
+  return available.length ? available[Math.floor(Math.random() * available.length)] : pool[Math.floor(Math.random() * pool.length)];
 }
 
 function renderRelics() {
