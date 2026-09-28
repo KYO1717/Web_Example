@@ -162,6 +162,7 @@ li .when {
 .floor-dots i { display: block; width: 26px; height: 4px; border-radius: 99px; background: #d9d9e8; }
 .floor-dots i.active { background: var(--main); }
 .eyebrow { margin: 0 0 7px; color: var(--main); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; }
+.ui-icon { display: inline-flex; align-items: center; justify-content: center; margin-right: 3px; font-size: 1.05em; letter-spacing: 0; vertical-align: -1px; }
 .muted { color: var(--gray); font-size: 13px; }
 .run-stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(100px, .75fr)) minmax(230px, 1.7fr); gap: 9px; color: var(--gray); font-size: 13px; }
 .stat-chip { min-width: 0; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
@@ -206,7 +207,7 @@ li .when {
 .map-node.cleared { background: #f4f4f5; color: var(--gray); }
 .map-node.locked { opacity: .45; }
 .node-floor { font-size: 10px; color: var(--gray); }
-.map-node strong { font-size: 13px; }
+.map-node strong { display: flex; align-items: center; gap: 4px; font-size: 13px; }
 .battlefield { display: grid; grid-template-columns: 1fr 46px 1fr; align-items: center; gap: 14px; margin: 22px 0 16px; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(135deg, #f5fbfc, #fff8f5); }
 .combatant { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .combatant.foe { flex-direction: row-reverse; text-align: right; }
@@ -249,6 +250,7 @@ li .when {
 .play-card:hover, .play-card.selected { border-color: var(--main); background: #f8f8ff; }
 .play-card.selected { transform: translateY(-5px); box-shadow: 0 5px 14px rgba(99, 102, 241, .16); }
 .play-card strong { font-size: 15px; }
+.play-card .card-icon { display: inline; margin-right: 3px; font-size: 17px; }
 .play-card span { font-size: 12px; }
 .play-card small { color: var(--gray); line-height: 1.4; }
 .play-card.defense { border-top: 3px solid #227c9d; }
@@ -264,6 +266,8 @@ li .when {
 .relic-list { display: flex; flex-direction: column; gap: 8px; }
 .relic { padding: 10px; background: #f4f4f5; border-radius: 6px; font-size: 13px; }
 .relic strong, .relic small { display: block; }
+.relic .relic-icon { display: inline; margin-right: 3px; }
+.relic .relic-icon { display: inline; font-size: 16px; }
 .relic small { margin-top: 4px; color: var(--gray); font-size: 11px; line-height: 1.4; }
 .ai-note { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 20px; }
 .ai-note p:not(.eyebrow) { min-height: 54px; font-size: 13px; line-height: 1.6; }

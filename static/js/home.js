@@ -9,7 +9,7 @@ function onAuthReady() {
     loginBox.hidden = true;
     welcomeBox.hidden = false;
     document.getElementById("hello").textContent =
-      currentUser.email.split("@")[0] + "님, 안녕하세요!";
+      currentUser.email.split("@")[0] + "님, 모험을 떠날 준비가 되셨나요?";
   } else {
     loginBox.hidden = false;
     welcomeBox.hidden = true;

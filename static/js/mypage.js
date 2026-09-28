@@ -1,4 +1,4 @@
-// 과거 기록 페이지 전용 코드
+// 모험 기록 페이지 전용 코드
 
 function onAuthReady() {
   document.getElementById("myEmail").textContent = currentUser.email;
@@ -11,18 +11,18 @@ function loadGameHistory() {
   try {
     history = JSON.parse(localStorage.getItem(historyKey) || "[]");
   } catch (error) {
-    console.error("기록 읽기 실패:", error);
+    console.error("모험 기록 읽기 실패:", error);
   }
 
   document.getElementById("historyCount").textContent = history.length;
   const list = document.getElementById("historyList");
   if (history.length === 0) {
-    list.innerHTML = '<li class="muted">아직 완료한 플레이 기록이 없습니다.</li>';
+    list.innerHTML = '<li class="muted">아직 떠난 모험이 없습니다.</li>';
     return;
   }
 
   list.innerHTML = history.map(function (result) {
-    const status = result.won ? "기록 완료" : "기록 중단";
+    const status = result.won ? "모험 완수" : "모험 실패";
     const statusClass = result.won ? "history-win" : "history-loss";
     const when = new Date(result.playedAt).toLocaleString("ko-KR");
     const relics = result.relics || [];
@@ -30,8 +30,8 @@ function loadGameHistory() {
     return '<li class="history-item ' + statusClass + '">' +
       '<strong>' + status + "</strong>" +
       '<span class="history-message">' + result.message + "</span>" +
-      '<span class="history-stats">' + result.floor + "층 도달 · HP " + result.hp + " / " + result.maxHp + " · " + result.gold + "G · +" + (result.score || 0).toLocaleString("ko-KR") + "점 · " + (result.build || "균형형") + " · " + (result.rank || "미등록") + "</span>" +
-      '<span class="history-relics">기록물: ' + relicText + "</span>" +
+      '<span class="history-stats">' + result.floor + "층 도달 · ❤️ " + result.hp + " / " + result.maxHp + " · 🪙 " + result.gold + " · ✨ +" + (result.score || 0).toLocaleString("ko-KR") + "점 · " + (result.build || "모험가") + " · " + (result.rank || "미등록") + "</span>" +
+      '<span class="history-relics">유물: ' + relicText + "</span>" +
       '<span class="when">' + when + "</span></li>";
   }).join("");
 }

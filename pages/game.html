@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>별의 기록</title>
+  <title>기록자의 모험</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
@@ -13,24 +13,24 @@
   <main class="game-main">
     <section class="game-heading">
       <div>
-        <p class="eyebrow">THE ARCHIVE / RUN 001</p>
-        <h1>별의 기록</h1>
-        <p class="muted">세 층의 기록을 지나 마지막 문을 여세요.</p>
+        <p class="eyebrow">THE ADVENTURE / RUN 001</p>
+        <h1>기록자의 모험</h1>
+        <p class="muted">기록자와 함께 던전 깊숙이 들어가 왕관 슬라임의 보물을 차지하세요.</p>
       </div>
       <div class="floor-progress" aria-label="현재 진행 층">
-        <span class="floor-progress-label">CURRENT FLOOR</span>
+        <span class="floor-progress-label"><span class="ui-icon" aria-hidden="true">🧭</span> 던전 층계</span>
         <strong><span id="floorValue">1</span><small> / 3</small></strong>
         <div class="floor-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></div>
       </div>
       <div class="run-stats">
-        <div class="stat-chip"><span>현재 HP</span><strong id="hpValue">30 / 30</strong></div>
-        <div class="stat-chip"><span>소지금</span><strong id="goldValue">0</strong></div>
-        <div class="stat-chip"><span>이번 도전</span><strong><span id="runScoreValue">0</span><small>점</small></strong></div>
-        <div class="stat-chip"><span>현재 빌드</span><strong id="buildValue">-</strong></div>
+        <div class="stat-chip"><span><span class="ui-icon" aria-hidden="true">❤️</span> 생명력</span><strong id="hpValue">30 / 30</strong></div>
+        <div class="stat-chip"><span><span class="ui-icon" aria-hidden="true">🪙</span> 소지금</span><strong id="goldValue">0</strong></div>
+        <div class="stat-chip"><span><span class="ui-icon" aria-hidden="true">✨</span> 이번 모험</span><strong><span id="runScoreValue">0</span><small>점</small></strong></div>
+        <div class="stat-chip"><span><span class="ui-icon" aria-hidden="true">⚔️</span> 전투 방식</span><strong id="buildValue">-</strong></div>
         <div class="rank-summary">
-          <div class="rank-line"><span>누적 랭크</span><strong id="rankValue">견습 기록자</strong><span><strong id="totalScoreValue">0</strong>점</span></div>
-          <div class="rank-meter" role="progressbar" aria-label="다음 랭크까지 진행도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="rankProgressFill"></span></div>
-          <small id="rankProgressText">다음 랭크까지 1,500점</small>
+          <div class="rank-line"><span><span class="ui-icon" aria-hidden="true">🏅</span> 명성</span><strong id="rankValue">견습 기록자</strong><span><strong id="totalScoreValue">0</strong>점</span></div>
+          <div class="rank-meter" role="progressbar" aria-label="다음 명성 등급까지 진행도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="rankProgressFill"></span></div>
+          <small id="rankProgressText">다음 명성 등급까지 1,500점</small>
         </div>
       </div>
     </section>
@@ -38,23 +38,23 @@
     <section class="game-layout">
       <div>
         <section id="difficultyPanel" class="game-panel difficulty-panel" hidden>
-          <p class="eyebrow">CHOOSE YOUR RECORD</p>
-          <h2>난이도를 선택하세요</h2>
-          <p class="event-copy">플레이 스타일에 맞는 빌드를 고른 뒤 난이도를 선택하세요. 높은 난이도일수록 점수 배율이 올라갑니다.</p>
-          <h3 class="choice-section-title">1. 시작 빌드</h3>
+          <p class="eyebrow">PREPARE FOR ADVENTURE</p>
+          <h2>모험을 준비하세요</h2>
+          <p class="event-copy">전투 방식을 고르고 던전의 위험도를 정하세요. 더 위험한 던전일수록 명성을 많이 얻습니다.</p>
+          <h3 class="choice-section-title">1. 전투 방식 선택</h3>
           <div id="buildChoices" class="build-choices"></div>
-          <h3 class="choice-section-title">2. 도전 난이도</h3>
+          <h3 class="choice-section-title">2. 던전 위험도</h3>
           <div id="difficultyChoices" class="difficulty-choices" hidden></div>
         </section>
 
         <section class="game-panel map-panel">
           <div class="panel-title">
             <div>
-              <p class="eyebrow">PATH</p>
-              <h2>기록의 경로</h2>
+              <p class="eyebrow">DUNGEON MAP</p>
+              <h2><span class="ui-icon" aria-hidden="true">🗺️</span> 던전 지도</h2>
             </div>
             <span id="nodeHint" class="muted">노드를 선택하세요.</span>
-            <button id="pathAssistButton" class="secondary-button" type="button">경로 조언 받기</button>
+            <button id="pathAssistButton" class="secondary-button" type="button"><span class="ui-icon" aria-hidden="true">🧭</span> 길잡이 조언</button>
           </div>
           <div id="map" class="map-nodes" aria-label="게임 맵"></div>
         </section>
@@ -62,13 +62,13 @@
         <section id="combatPanel" class="game-panel combat-panel" hidden>
           <div class="panel-title">
             <div>
-              <p class="eyebrow">ENCOUNTER</p>
-              <h2 id="enemyName">기록의 잔상</h2>
+              <p class="eyebrow">MONSTER ENCOUNTER</p>
+              <h2 id="enemyName">왕관 슬라임</h2>
             </div>
             <div class="turn-status">
-              <strong id="turnIndicator">아군 턴</strong>
+                <strong id="turnIndicator">기록자 차례</strong>
               <span id="actionCounter">행동 2 / 2</span>
-              <span id="turnOrder">아군 행동 → 적 행동</span>
+                <span id="turnOrder">행동 2회 후 몬스터 차례</span>
             </div>
           </div>
           <div class="battlefield" aria-label="전투 상황">
@@ -78,9 +78,9 @@
               </div>
               <div class="combatant-info">
                 <strong>기록자</strong>
-                <span id="playerHp">HP 30 / 30</span>
+                <span id="playerHp">❤️ 30 / 30</span>
                 <div class="health-bar ally-health"><span id="playerBarFill"></span></div>
-                <span id="playerBlock">방어도 0</span>
+                <span id="playerBlock">🛡️ 방어도 0</span>
               </div>
             </div>
             <div class="battle-divider">VS</div>
@@ -89,8 +89,8 @@
                 <img src="/assets/enemy.png" alt="적 캐릭터">
               </div>
               <div class="combatant-info">
-                <strong id="enemyLabel">기록의 잔상</strong>
-                <span id="enemyHp">HP 0 / 0</span>
+                <strong id="enemyLabel">왕관 슬라임</strong>
+                <span id="enemyHp">❤️ 0 / 0</span>
                 <div class="health-bar enemy-health"><span id="enemyBarFill"></span></div>
                 <span id="enemyIntent">공격 준비</span>
                 <div class="enemy-action-status">
@@ -100,64 +100,64 @@
               </div>
             </div>
           </div>
-          <p id="combatLog" class="combat-log">카드를 선택해 행동하세요.</p>
+          <p id="combatLog" class="combat-log">전법을 골라 기록자를 지키세요.</p>
 
           <div class="hand-heading">
-            <h3>손패</h3>
-            <span id="selectionHint" class="muted">손패 8장 · 사용한 만큼 남은 덱에서 랜덤 보충</span>
+            <h3><span class="ui-icon" aria-hidden="true">🃏</span> 전투 카드</h3>
+            <span id="selectionHint" class="muted">전투 카드 8장 · 사용한 카드는 덱에서 보충</span>
           </div>
           <div id="hand" class="card-hand" aria-label="8장 손패"></div>
           <div class="combat-actions">
-            <button id="playButton" type="button" disabled>선택 카드 사용</button>
-            <button id="endTurnButton" type="button">턴 종료</button>
-            <button id="combatAssistButton" class="secondary-button" type="button">전투 조언 받기</button>
+            <button id="playButton" type="button" disabled>⚔️ 전법 실행</button>
+            <button id="endTurnButton" type="button">⏳ 차례 넘기기</button>
+            <button id="combatAssistButton" class="secondary-button" type="button"><span class="ui-icon" aria-hidden="true">🧙</span> 전투 조언</button>
           </div>
         </section>
 
         <section id="eventPanel" class="game-panel event-panel" hidden>
-          <p class="eyebrow">ANOMALY</p>
-          <h2>갈라진 기록</h2>
-          <p class="event-copy">기록의 틈에서 다음 여정을 바꿀 힘이 흘러나옵니다. 하나만 선택하세요.</p>
+          <p class="eyebrow">MYSTERIOUS ENCOUNTER</p>
+          <h2>수상한 조우</h2>
+          <p class="event-copy">던전에서 마주친 기이한 존재가 선택을 기다립니다. 하나를 고르세요.</p>
           <div id="eventChoices" class="event-choices"></div>
         </section>
 
         <section id="rewardPanel" class="game-panel reward-panel" hidden>
-          <p class="eyebrow">BATTLE REWARD</p>
-          <h2>전투 보상</h2>
-          <p class="event-copy">이번 전투의 흐름을 다음 전투에도 이어갈 방법을 선택하세요.</p>
+          <p class="eyebrow">TREASURE</p>
+          <h2>전리품</h2>
+          <p class="event-copy">전투에서 얻은 기회를 다음 싸움에 유리하게 활용하세요.</p>
           <div id="rewardChoices" class="event-choices"></div>
         </section>
 
         <section id="shopPanel" class="game-panel shop-panel" hidden>
-          <p class="eyebrow">MERCHANT</p>
-          <h2>기록 상점</h2>
-          <p class="event-copy">모은 금화로 이번 여정에 필요한 힘을 구매하세요.</p>
+          <p class="eyebrow">TRAVELING MERCHANT</p>
+          <h2>떠돌이 상인</h2>
+          <p class="event-copy"><span class="ui-icon" aria-hidden="true">🪙</span> 금화로 장비와 마법 물품을 거래하세요.</p>
           <p id="shopMessage" class="shop-message">현재 금화로 상품을 구매할 수 있습니다.</p>
           <div id="shopChoices" class="shop-choices"></div>
         </section>
 
         <section id="resultPanel" class="game-panel result-panel" hidden>
-          <p class="eyebrow">RUN STATUS</p>
+          <p class="eyebrow">ADVENTURE'S END</p>
           <h2 id="resultTitle"></h2>
           <p id="resultText" class="muted"></p>
           <div class="result-scoreboard" aria-live="polite">
-            <div><span>이번 도전 점수</span><strong id="scoreResult">0점</strong></div>
+            <div><span>이번 모험 명성</span><strong id="scoreResult">0점</strong></div>
             <div><span>누적 점수</span><strong id="finalTotalScore">0점</strong></div>
-            <div><span>현재 랭크</span><strong id="finalRank">견습 기록자</strong></div>
+            <div><span>현재 명성 등급</span><strong id="finalRank">견습 기록자</strong></div>
             <p id="rankUpNotice" hidden></p>
           </div>
-          <button id="restartButton" type="button">새로운 기록 시작</button>
+          <button id="restartButton" type="button">새 모험 떠나기</button>
         </section>
       </div>
 
       <aside class="game-panel relic-panel">
-        <p class="eyebrow">RELICS</p>
-        <h2>기록물</h2>
-        <div id="relics" class="relic-list"><span class="muted">아직 기록물이 없습니다.</span></div>
+        <p class="eyebrow">ADVENTURER'S SATCHEL</p>
+        <h2><span class="ui-icon" aria-hidden="true">🎒</span> 소지 유물</h2>
+        <div id="relics" class="relic-list"><span class="muted">아직 발견한 유물이 없습니다.</span></div>
         <div class="ai-note">
-          <p class="eyebrow">AI GUIDANCE</p>
-          <p id="aiText" aria-live="polite">현재 상황을 바탕으로 짧고 실용적인 조언을 제공합니다.</p>
-          <button id="aiButton" class="secondary-button" type="button">현재 상황 조언</button>
+          <p class="eyebrow">THE SAGE</p>
+          <p id="aiText" aria-live="polite">현자가 던전 탐험과 전투에 필요한 조언을 건넵니다.</p>
+          <button id="aiButton" class="secondary-button" type="button"><span class="ui-icon" aria-hidden="true">🧙</span> 현자의 조언</button>
         </div>
       </aside>
     </section>
