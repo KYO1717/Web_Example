@@ -214,9 +214,10 @@ li .when {
 .battlefield { display: grid; grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr); align-items: center; gap: 12px; margin: 22px 0 16px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(135deg, #f5fbfc, #fff8f5); }
 .combatant { display: flex; flex-direction: row; align-items: center; gap: 12px; min-width: 0; text-align: left; }
 .combatant.foe { flex-direction: row-reverse; text-align: right; }
-.combatant-portrait { position: relative; flex: 0 0 auto; width: 92px; height: 108px; overflow: hidden; border-radius: 14px; border: 1px solid #a8d4dc; background: linear-gradient(160deg, #dff5f3, #f8ffff); box-shadow: 0 6px 16px rgba(34, 124, 157, .12), inset 0 -12px 16px rgba(34, 124, 157, .1); }
+.combatant-portrait { position: relative; flex: 0 0 auto; width: 108px; height: auto; aspect-ratio: 1; overflow: hidden; border-radius: 14px; border: 1px solid #a8d4dc; background: linear-gradient(160deg, #dff5f3, #f8ffff); box-shadow: 0 6px 16px rgba(34, 124, 157, .12), inset 0 -12px 16px rgba(34, 124, 157, .1); }
 .combatant-portrait img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.foe-portrait { border-color: #e5aaa5; background: linear-gradient(160deg, #fff0ed, #fffafa); box-shadow: inset 0 -14px 20px rgba(194, 65, 59, .12); }
+.player-portrait { width: 110px; aspect-ratio: 176 / 160; }
+.foe-portrait { width: 104px; aspect-ratio: 451 / 468; border-color: #e5aaa5; background: linear-gradient(160deg, #fff0ed, #fffafa); box-shadow: 0 6px 16px rgba(194, 65, 59, .12), inset 0 -12px 16px rgba(194, 65, 59, .1); }
 .portrait-halo { position: absolute; top: 12px; left: 50%; width: 50px; height: 50px; transform: translateX(-50%); border: 1px solid rgba(34, 124, 157, .3); border-radius: 50%; }
 .foe-portrait .portrait-halo { border-color: rgba(194, 65, 59, .3); }
 .portrait-head { position: absolute; top: 23px; left: 50%; width: 28px; height: 34px; transform: translateX(-50%); border-radius: 48% 48% 44% 44%; background: #e7b99b; box-shadow: 0 -9px 0 #334155; }
@@ -401,7 +402,9 @@ li .when {
 .game-page .map-options { gap: 7px; }
 .game-page .combat-panel { display: flex; flex-direction: column; }
 .game-page .battlefield { flex: 0 0 auto; min-height: 164px; margin: 6px 0; padding: 10px 12px; }
-.game-page .combatant-portrait { flex-basis: auto; width: 92px; height: 108px; }
+.game-page .combatant-portrait { flex-basis: auto; }
+.game-page .player-portrait { width: 110px; }
+.game-page .foe-portrait { width: 104px; }
 .game-page .combatant { gap: 9px; }
 .game-page .combatant-info strong { font-size: 14px; }
 .game-page .enemy-action-status { margin-top: 4px; padding-top: 4px; }
@@ -456,7 +459,9 @@ li .when {
   .game-page .game-panel { padding: 8px; }
   .game-page .combat-panel .panel-title { margin-bottom: 4px; }
   .game-page .battlefield { height: 150px; min-height: 150px; margin: 2px 0; padding: 6px 8px; }
-  .game-page .combatant-portrait { flex-basis: auto; width: 78px; height: 88px; }
+  .game-page .combatant-portrait { flex-basis: auto; }
+  .game-page .player-portrait { width: 86px; }
+  .game-page .foe-portrait { width: 82px; }
   .game-page .combatant { flex-direction: row; gap: 7px; text-align: left; }
   .game-page .combatant.foe { flex-direction: row-reverse; text-align: right; }
   .game-page .enemy-action-status { display: none; }
@@ -488,7 +493,9 @@ li .when {
   .game-page .battlefield { grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr); gap: 6px; padding: 10px 7px; }
   .game-page .combatant { flex-direction: column; text-align: center; gap: 6px; }
   .game-page .combatant.foe { flex-direction: column; text-align: center; }
-  .game-page .combatant-portrait { flex: 0 0 auto; width: clamp(76px, 23vw, 118px); height: clamp(92px, 23vw, 128px); }
+  .game-page .combatant-portrait { flex: 0 0 auto; height: auto; }
+  .game-page .player-portrait { width: clamp(76px, 22vw, 104px); }
+  .game-page .foe-portrait { width: clamp(72px, 20vw, 96px); }
   .game-page .combatant-info { width: 100%; }
   .game-page .combatant-info strong { font-size: 12px; }
   .game-page .combatant-info span, .game-page .combatant-info #playerHp, .game-page .combatant-info #enemyHp { font-size: 10px; }
