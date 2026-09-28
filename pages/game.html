@@ -23,12 +23,12 @@
         <div class="floor-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></div>
       </div>
       <div class="run-stats">
-        <span>HP <strong id="hpValue">30 / 30</strong></span>
-        <span>소지금 <strong id="goldValue">0</strong></span>
-        <span>이번 도전 <strong id="runScoreValue">0</strong>점</span>
-        <span>빌드 <strong id="buildValue">-</strong></span>
+        <div class="stat-chip"><span>현재 HP</span><strong id="hpValue">30 / 30</strong></div>
+        <div class="stat-chip"><span>소지금</span><strong id="goldValue">0</strong></div>
+        <div class="stat-chip"><span>이번 도전</span><strong><span id="runScoreValue">0</span><small>점</small></strong></div>
+        <div class="stat-chip"><span>현재 빌드</span><strong id="buildValue">-</strong></div>
         <div class="rank-summary">
-          <div class="rank-line"><strong id="rankValue">견습 기록자</strong><span><strong id="totalScoreValue">0</strong> 누적 점수</span></div>
+          <div class="rank-line"><span>누적 랭크</span><strong id="rankValue">견습 기록자</strong><span><strong id="totalScoreValue">0</strong>점</span></div>
           <div class="rank-meter" role="progressbar" aria-label="다음 랭크까지 진행도" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="rankProgressFill"></span></div>
           <small id="rankProgressText">다음 랭크까지 1,500점</small>
         </div>
@@ -40,8 +40,10 @@
         <section id="difficultyPanel" class="game-panel difficulty-panel" hidden>
           <p class="eyebrow">CHOOSE YOUR RECORD</p>
           <h2>난이도를 선택하세요</h2>
-          <p class="event-copy">먼저 빌드를 선택하세요. 난이도가 높을수록 누적 점수를 더 많이 얻습니다.</p>
+          <p class="event-copy">플레이 스타일에 맞는 빌드를 고른 뒤 난이도를 선택하세요. 높은 난이도일수록 점수 배율이 올라갑니다.</p>
+          <h3 class="choice-section-title">1. 시작 빌드</h3>
           <div id="buildChoices" class="build-choices"></div>
+          <h3 class="choice-section-title">2. 도전 난이도</h3>
           <div id="difficultyChoices" class="difficulty-choices" hidden></div>
         </section>
 
@@ -138,7 +140,12 @@
           <p class="eyebrow">RUN STATUS</p>
           <h2 id="resultTitle"></h2>
           <p id="resultText" class="muted"></p>
-          <p id="scoreResult" class="score-result"></p>
+          <div class="result-scoreboard" aria-live="polite">
+            <div><span>이번 도전 점수</span><strong id="scoreResult">0점</strong></div>
+            <div><span>누적 점수</span><strong id="finalTotalScore">0점</strong></div>
+            <div><span>현재 랭크</span><strong id="finalRank">견습 기록자</strong></div>
+            <p id="rankUpNotice" hidden></p>
+          </div>
           <button id="restartButton" type="button">새로운 기록 시작</button>
         </section>
       </div>

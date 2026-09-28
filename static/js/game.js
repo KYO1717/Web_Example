@@ -161,7 +161,9 @@ function renderBuildChoices() {
     const build = BUILD_LIBRARY[id];
     const selected = gameState.buildId === id ? " selected" : "";
     return '<button class="build-choice' + selected + '" data-build="' + id + '" type="button" aria-pressed="' + (gameState.buildId === id) + '">' +
-      '<strong>' + build.name + '</strong><span>' + build.description + '</span><small>특성 · ' + build.passive + '</small></button>';
+      '<span class="build-icon" aria-hidden="true">' + (id === "balanced" ? "✦" : id === "assault" ? "⚔" : id === "attrition" ? "◌" : "⬡") + '</span>' +
+      '<strong>' + build.name + '</strong><span>' + build.description + '</span><small>특성 · ' + build.passive + '</small>' +
+      '<span class="build-selected-label">' + (gameState.buildId === id ? "선택됨" : "빌드 선택") + '</span></button>';
   }).join("");
   choices.querySelectorAll("[data-build]").forEach(function (button) {
     button.addEventListener("click", function () {
@@ -901,10 +903,17 @@ function endRun(won, message) {
   if (progress) {
     const previousRank = getRankInfo(progress.previousScore);
     const currentRank = getRankInfo(progress.totalScore);
-    scoreResult.textContent = "이번 도전 +" + gameState.runScore.toLocaleString("ko-KR") + "점 · 누적 " + progress.totalScore.toLocaleString("ko-KR") + "점 · " + currentRank.name +
-      (currentRank.index > previousRank.index ? " 랭크 상승!" : "");
+    scoreResult.textContent = "+" + gameState.runScore.toLocaleString("ko-KR") + "점";
+    document.getElementById("finalTotalScore").textContent = progress.totalScore.toLocaleString("ko-KR") + "점";
+    document.getElementById("finalRank").textContent = currentRank.name;
+    const rankUpNotice = document.getElementById("rankUpNotice");
+    rankUpNotice.hidden = currentRank.index <= previousRank.index;
+    rankUpNotice.textContent = rankUpNotice.hidden ? "" : "랭크 상승! " + previousRank.name + " → " + currentRank.name;
   } else {
-    scoreResult.textContent = "이번 도전 +" + gameState.runScore.toLocaleString("ko-KR") + "점";
+    scoreResult.textContent = "+" + gameState.runScore.toLocaleString("ko-KR") + "점";
+    document.getElementById("finalTotalScore").textContent = "로그인 후 기록 가능";
+    document.getElementById("finalRank").textContent = "-";
+    document.getElementById("rankUpNotice").hidden = true;
   }
   document.getElementById("resultPanel").hidden = false;
   gameState.combat = null;
