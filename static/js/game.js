@@ -852,7 +852,7 @@ async function requestContextualAI(task, context, buttonId) {
     button.disabled = true;
     button.textContent = "AI가 살펴보는 중...";
   }
-  text.textContent = task === "story" ? "이번 장면을 기록하는 중..." : "현재 상황을 분석하는 중...";
+  text.textContent = task === "story" ? "현재 상황을 확인하는 중..." : "현재 상황을 분석하는 중...";
   try {
     const answer = await askAI({ task: task, context: context });
     if (version === aiRequestVersion) text.textContent = answer;
