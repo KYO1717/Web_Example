@@ -30,7 +30,7 @@ function loadGameHistory() {
     return '<li class="history-item ' + statusClass + '">' +
       '<strong>' + status + "</strong>" +
       '<span class="history-message">' + result.message + "</span>" +
-      '<span class="history-stats">' + result.floor + "층 도달 · HP " + result.hp + " / " + result.maxHp + " · " + result.gold + "G</span>" +
+      '<span class="history-stats">' + result.floor + "층 도달 · HP " + result.hp + " / " + result.maxHp + " · " + result.gold + "G · +" + (result.score || 0).toLocaleString("ko-KR") + "점 · " + (result.build || "균형형") + " · " + (result.rank || "미등록") + "</span>" +
       '<span class="history-relics">기록물: ' + relicText + "</span>" +
       '<span class="when">' + when + "</span></li>";
   }).join("");

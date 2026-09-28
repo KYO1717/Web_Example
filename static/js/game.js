@@ -14,12 +14,55 @@ const NODE_LABELS = {
   boss: "보스",
 };
 
+const BUILD_LIBRARY = {
+  balanced: {
+    name: "균형형",
+    description: "공격·지속 피해·회복·방어가 고르게 갖춰진 안정적인 시작 덱입니다.",
+    passive: "고른 카드 구성",
+    cards: { strike: 8, bleed: 8, heal: 8, shield: 8 },
+  },
+  assault: {
+    name: "돌격형",
+    description: "섬광 카드 효과 +2. 공격 카드 비중이 높아 빠른 처치에 유리합니다.",
+    passive: "섬광 피해 +2",
+    strikeBonus: 2,
+    cards: { strike: 14, bleed: 8, heal: 5, shield: 5 },
+  },
+  attrition: {
+    name: "침식형",
+    description: "흔적 카드 피해 +1, 지속 턴 +1. 지속 피해를 쌓아 적을 압박합니다.",
+    passive: "흔적 피해 +1 · 지속 +1턴",
+    bleedBonus: 1,
+    bleedTurnsBonus: 1,
+    cards: { strike: 6, bleed: 14, heal: 6, shield: 6 },
+  },
+  guardian: {
+    name: "수호형",
+    description: "결계와 회귀 효과 +2. 방어와 회복으로 장기전에 강합니다.",
+    passive: "결계·회귀 효과 +2",
+    shieldBonus: 2,
+    healBonus: 2,
+    cards: { strike: 6, bleed: 4, heal: 11, shield: 11 },
+  },
+};
+
+const RANKS = [
+  { name: "견습 기록자", score: 0 },
+  { name: "별의 탐험가", score: 1500 },
+  { name: "성운 기록자", score: 4000 },
+  { name: "기록 수호자", score: 8000 },
+  { name: "대기록관", score: 14000 },
+  { name: "별의 설계자", score: 22000 },
+];
+
+const NODE_SCORE = { battle: 100, event: 80, shop: 60, elite: 180, boss: 300 };
+
 const DIFFICULTIES = {
-  1: { name: "I · 견습 기록자", description: "기본 난이도. 기록의 규칙을 익히기 좋습니다.", enemyHp: 1, enemyDamage: 1, reward: 1, curseChance: 0 },
-  2: { name: "II · 잔잔한 파문", description: "적의 체력과 공격력이 조금 올라갑니다.", enemyHp: 1.15, enemyDamage: 1.1, reward: 1.15, curseChance: 0 },
-  3: { name: "III · 뒤틀린 문장", description: "전투가 거칠어지고 불리한 기록물이 등장합니다.", enemyHp: 1.3, enemyDamage: 1.2, reward: 1.3, curseChance: .35 },
-  4: { name: "IV · 붕괴 직전", description: "강한 적과 저주가 여정 전체를 압박합니다.", enemyHp: 1.5, enemyDamage: 1.35, reward: 1.5, curseChance: .6 },
-  5: { name: "V · 금지된 원본", description: "가장 위험한 기록. 큰 보상과 큰 대가가 기다립니다.", enemyHp: 1.75, enemyDamage: 1.55, reward: 1.8, curseChance: .85 },
+  1: { name: "I · 견습 기록자", description: "기본 난이도. 기록의 규칙을 익히기 좋습니다.", enemyHp: 1, enemyDamage: 1, reward: 1, curseChance: 0, scoreMultiplier: 1 },
+  2: { name: "II · 잔잔한 파문", description: "적의 체력과 공격력이 조금 올라갑니다.", enemyHp: 1.15, enemyDamage: 1.1, reward: 1.15, curseChance: 0, scoreMultiplier: 1.25 },
+  3: { name: "III · 뒤틀린 문장", description: "전투가 거칠어지고 불리한 기록물이 등장합니다.", enemyHp: 1.3, enemyDamage: 1.2, reward: 1.3, curseChance: .35, scoreMultiplier: 1.5 },
+  4: { name: "IV · 붕괴 직전", description: "강한 적과 저주가 여정 전체를 압박합니다.", enemyHp: 1.5, enemyDamage: 1.35, reward: 1.5, curseChance: .6, scoreMultiplier: 1.8 },
+  5: { name: "V · 금지된 원본", description: "가장 위험한 기록. 큰 보상과 큰 대가가 기다립니다.", enemyHp: 1.75, enemyDamage: 1.55, reward: 1.8, curseChance: .85, scoreMultiplier: 2.2 },
 };
 
 const RELIC_LIBRARY = {
@@ -48,6 +91,8 @@ const gameState = {
   reward: null,
   relics: [],
   difficulty: null,
+  buildId: null,
+  runScore: 0,
   runEnded: false,
 };
 
@@ -64,18 +109,17 @@ function resetGame(difficultyId) {
   gameState.hp = 30;
   gameState.maxHp = 30;
   gameState.gold = 0;
+  gameState.runScore = 0;
+  gameState.buildId = BUILD_LIBRARY[gameState.buildId] ? gameState.buildId : "balanced";
   gameState.map = createMap();
   gameState.currentNode = null;
-  gameState.cardPool = [
-    createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
-    createCard("strike", 1), createCard("strike", 1), createCard("strike", 1), createCard("strike", 1),
-    createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1),
-    createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1), createCard("bleed", 1),
-    createCard("heal", 1), createCard("heal", 1), createCard("heal", 1), createCard("heal", 1),
-    createCard("heal", 1), createCard("heal", 1), createCard("heal", 1), createCard("heal", 1),
-    createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
-    createCard("shield", 1), createCard("shield", 1), createCard("shield", 1), createCard("shield", 1),
-  ];
+  gameState.cardPool = [];
+  const startingCards = BUILD_LIBRARY[gameState.buildId].cards;
+  Object.keys(startingCards).forEach(function (cardId) {
+    for (let index = 0; index < startingCards[cardId]; index += 1) {
+      gameState.cardPool.push(createCard(cardId, 1));
+    }
+  });
   gameState.deck = [];
   gameState.hand = [];
   gameState.selectedCards = [];
@@ -101,12 +145,31 @@ function showDifficultySelect() {
   const choices = document.getElementById("difficultyChoices");
   choices.innerHTML = Object.keys(DIFFICULTIES).map(function (id) {
     const difficulty = DIFFICULTIES[id];
-    return '<button class="difficulty-choice" data-difficulty="' + id + '" type="button"><strong>' + difficulty.name + '</strong><span>' + difficulty.description + '</span></button>';
+    return '<button class="difficulty-choice" data-difficulty="' + id + '" type="button"><strong>' + difficulty.name + '</strong><span>' + difficulty.description + '</span><small>점수 배율 ×' + difficulty.scoreMultiplier + '</small></button>';
   }).join("");
   choices.querySelectorAll("[data-difficulty]").forEach(function (button) {
     button.addEventListener("click", function () { resetGame(button.dataset.difficulty); });
   });
+  choices.hidden = !gameState.buildId;
+  renderBuildChoices();
   renderAll();
+}
+
+function renderBuildChoices() {
+  const choices = document.getElementById("buildChoices");
+  choices.innerHTML = Object.keys(BUILD_LIBRARY).map(function (id) {
+    const build = BUILD_LIBRARY[id];
+    const selected = gameState.buildId === id ? " selected" : "";
+    return '<button class="build-choice' + selected + '" data-build="' + id + '" type="button" aria-pressed="' + (gameState.buildId === id) + '">' +
+      '<strong>' + build.name + '</strong><span>' + build.description + '</span><small>특성 · ' + build.passive + '</small></button>';
+  }).join("");
+  choices.querySelectorAll("[data-build]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      gameState.buildId = button.dataset.build;
+      renderBuildChoices();
+      document.getElementById("difficultyChoices").hidden = false;
+    });
+  });
 }
 
 function createMap() {
@@ -161,10 +224,57 @@ function renderAll() {
   renderRelics();
 }
 
+function getProgressKey() {
+  return currentUser ? "archive-game-progress-" + currentUser.id : null;
+}
+
+function loadPlayerProgress() {
+  const key = getProgressKey();
+  if (!key) return { totalScore: 0, totalRuns: 0 };
+  try {
+    const saved = JSON.parse(localStorage.getItem(key) || "{}");
+    return {
+      totalScore: Number.isFinite(saved.totalScore) ? Math.max(0, saved.totalScore) : 0,
+      totalRuns: Number.isFinite(saved.totalRuns) ? Math.max(0, saved.totalRuns) : 0,
+    };
+  } catch (error) {
+    console.error("누적 점수 읽기 실패:", error);
+    return { totalScore: 0, totalRuns: 0 };
+  }
+}
+
+function getRankInfo(totalScore) {
+  let index = 0;
+  for (let rankIndex = 1; rankIndex < RANKS.length; rankIndex += 1) {
+    if (totalScore < RANKS[rankIndex].score) break;
+    index = rankIndex;
+  }
+  return { index: index, name: RANKS[index].name, score: RANKS[index].score };
+}
+
 function renderStats() {
   document.getElementById("floorValue").textContent = gameState.floor;
   document.getElementById("hpValue").textContent = gameState.hp + " / " + gameState.maxHp;
   document.getElementById("goldValue").textContent = gameState.gold;
+  document.getElementById("runScoreValue").textContent = gameState.runScore.toLocaleString("ko-KR");
+  document.getElementById("buildValue").textContent = BUILD_LIBRARY[gameState.buildId] ? BUILD_LIBRARY[gameState.buildId].name : "선택 전";
+  const progress = loadPlayerProgress();
+  const rank = getRankInfo(progress.totalScore);
+  const nextRank = RANKS[rank.index + 1];
+  document.getElementById("rankValue").textContent = rank.name;
+  document.getElementById("totalScoreValue").textContent = progress.totalScore.toLocaleString("ko-KR");
+  const progressFill = document.getElementById("rankProgressFill");
+  const progressBar = progressFill.parentElement;
+  if (nextRank) {
+    const percentage = Math.min(100, Math.max(0, (progress.totalScore - rank.score) / (nextRank.score - rank.score) * 100));
+    progressFill.style.width = percentage + "%";
+    progressBar.setAttribute("aria-valuenow", Math.round(percentage));
+    document.getElementById("rankProgressText").textContent = "다음 랭크까지 " + (nextRank.score - progress.totalScore).toLocaleString("ko-KR") + "점 · " + nextRank.name;
+  } else {
+    progressFill.style.width = "100%";
+    progressBar.setAttribute("aria-valuenow", "100");
+    document.getElementById("rankProgressText").textContent = "최고 랭크 달성";
+  }
   document.querySelectorAll(".floor-dots i").forEach(function (dot, index) {
     dot.classList.toggle("active", index < gameState.floor);
   });
@@ -553,10 +663,11 @@ function renderHand() {
 
 function getCardValue(card) {
   const bonus = gameState.relics.some(function (relic) { return relic.id === "compass"; }) ? 1 : 0;
-  if (card.id === "shield") return 5 * card.rank + bonus;
-  if (card.id === "heal") return 6 * card.rank + bonus + (gameState.combat && gameState.combat.block > 0 ? 2 : 0);
-  if (card.id === "bleed") return 3 * card.rank + bonus;
-  return 7 * card.rank + bonus;
+  const build = BUILD_LIBRARY[gameState.buildId] || BUILD_LIBRARY.balanced;
+  if (card.id === "shield") return 5 * card.rank + bonus + (build.shieldBonus || 0);
+  if (card.id === "heal") return 6 * card.rank + bonus + (gameState.combat && gameState.combat.block > 0 ? 2 : 0) + (build.healBonus || 0);
+  if (card.id === "bleed") return 3 * card.rank + bonus + (build.bleedBonus || 0);
+  return 7 * card.rank + bonus + (build.strikeBonus || 0);
 }
 
 function toggleCard(uid) {
@@ -660,7 +771,7 @@ function playSelectedCard() {
     actionMessage = "회귀로 HP를 " + healed + " 회복했습니다.";
   } else if (card.id === "bleed") {
     gameState.combat.damageOverTime = value;
-    gameState.combat.damageOverTimeTurns = 3;
+    gameState.combat.damageOverTimeTurns = 3 + (BUILD_LIBRARY[gameState.buildId].bleedTurnsBonus || 0);
     actionMessage = "흔적이 적에게 매 턴 " + value + " 지속 피해를 남겼습니다.";
   } else {
     const synergyBonus = gameState.combat.damageOverTimeTurns > 0 ? 3 : 0;
@@ -751,6 +862,7 @@ function getEnemyIntentText() {
 
 function completeNode(message) {
   const current = gameState.currentNode;
+  const points = awardNodeScore(current);
   current.cleared = true;
   current.selected = false;
   gameState.map[current.floor - 1].forEach(function (node) {
@@ -763,23 +875,56 @@ function completeNode(message) {
       if (node.stage === 0) node.locked = false;
     });
   }
-  document.getElementById("nodeHint").textContent = message;
+  document.getElementById("nodeHint").textContent = message + " · +" + points.toLocaleString("ko-KR") + "점";
   requestNodeStory("outcome", message);
+}
+
+function awardNodeScore(node) {
+  const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+  const baseScore = (NODE_SCORE[node.type] || 0) + (node.floor - 1) * 25;
+  const points = Math.round(baseScore * difficulty.scoreMultiplier);
+  gameState.runScore += points;
+  return points;
 }
 
 function endRun(won, message) {
   if (gameState.runEnded) return;
   gameState.runEnded = true;
-  saveGameResult(won, message);
+  if (won) {
+    const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+    gameState.runScore += Math.round(500 * difficulty.scoreMultiplier);
+  }
+  const progress = saveGameResult(won, message);
   document.getElementById("resultTitle").textContent = won ? "기록 완료" : "기록 중단";
   document.getElementById("resultText").textContent = message;
+  const scoreResult = document.getElementById("scoreResult");
+  if (progress) {
+    const previousRank = getRankInfo(progress.previousScore);
+    const currentRank = getRankInfo(progress.totalScore);
+    scoreResult.textContent = "이번 도전 +" + gameState.runScore.toLocaleString("ko-KR") + "점 · 누적 " + progress.totalScore.toLocaleString("ko-KR") + "점 · " + currentRank.name +
+      (currentRank.index > previousRank.index ? " 랭크 상승!" : "");
+  } else {
+    scoreResult.textContent = "이번 도전 +" + gameState.runScore.toLocaleString("ko-KR") + "점";
+  }
   document.getElementById("resultPanel").hidden = false;
   gameState.combat = null;
+  renderStats();
   requestNodeStory("run-ended", message);
 }
 
 function saveGameResult(won, message) {
   if (!currentUser) return;
+  const progressKey = getProgressKey();
+  const progress = loadPlayerProgress();
+  const previousScore = progress.totalScore;
+  progress.totalScore += gameState.runScore;
+  progress.totalRuns += 1;
+  try {
+    localStorage.setItem(progressKey, JSON.stringify(progress));
+  } catch (error) {
+    console.error("누적 점수 저장 실패:", error);
+  }
+
   const historyKey = "archive-game-history-" + currentUser.id;
   let history = [];
   try {
@@ -795,6 +940,10 @@ function saveGameResult(won, message) {
     hp: Math.max(0, gameState.hp),
     maxHp: gameState.maxHp,
     gold: gameState.gold,
+    score: gameState.runScore,
+    totalScore: progress.totalScore,
+    build: BUILD_LIBRARY[gameState.buildId].name,
+    rank: getRankInfo(progress.totalScore).name,
     relics: gameState.relics.map(function (relic) { return RELIC_LIBRARY[relic.id].name; }),
     playedAt: new Date().toISOString(),
   });
@@ -803,6 +952,8 @@ function saveGameResult(won, message) {
   } catch (error) {
     console.error("플레이 기록 저장 실패:", error);
   }
+  progress.previousScore = previousScore;
+  return progress;
 }
 
 function addRelic(id) {
@@ -931,7 +1082,7 @@ function requestArchiveNote() {
 document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("playButton").addEventListener("click", playSelectedCard);
   document.getElementById("endTurnButton").addEventListener("click", endTurn);
-  document.getElementById("restartButton").addEventListener("click", resetGame);
+  document.getElementById("restartButton").addEventListener("click", showDifficultySelect);
   document.getElementById("aiButton").addEventListener("click", requestArchiveNote);
   document.getElementById("pathAssistButton").addEventListener("click", requestPathAdvice);
   document.getElementById("combatAssistButton").addEventListener("click", requestCombatAdvice);
