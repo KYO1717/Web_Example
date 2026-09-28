@@ -192,18 +192,25 @@ function renderMap() {
 }
 
 function renderMapNode(node) {
-  const stateClass = node.cleared ? "cleared" : node.locked ? "locked" : "available";
+  const stateClass = node.cleared ? "cleared" : node.selected ? "selected" : node.locked ? "locked" : "available";
   const bossClass = node.type === "boss" ? " boss-node" : "";
   return '<button class="map-node ' + stateClass + bossClass + '" data-node-id="' + node.id + '" type="button" ' +
     (node.locked || node.cleared ? "disabled" : "") + ">" +
-    '<span class="node-floor">' + (node.type === "boss" ? "최종 관문" : "선택 가능") + "</span>" +
+    '<span class="node-floor">' + (node.selected ? "진행 중" : node.type === "boss" ? "최종 관문" : node.locked ? "잠김" : "선택 가능") + "</span>" +
     '<strong>' + NODE_LABELS[node.type] + "</strong></button>";
 }
 
 function selectNode(nodeId) {
+  if (gameState.combat || (gameState.event && gameState.event.open) ||
+      (gameState.shop && gameState.shop.open) || gameState.reward || gameState.runEnded) return;
   const node = gameState.map.flat().find(function (item) { return item.id === nodeId; });
   if (!node || node.locked || node.cleared || gameState.runEnded) return;
   gameState.currentNode = node;
+  node.selected = true;
+  node.locked = true;
+  gameState.map[node.floor - 1].forEach(function (sibling) {
+    if (sibling.stage === node.stage && sibling.id !== node.id) sibling.locked = true;
+  });
   document.getElementById("nodeHint").textContent = NODE_LABELS[node.type] + " 노드가 선택되었습니다.";
 
   if (node.type === "battle" || node.type === "elite" || node.type === "boss") {
@@ -745,6 +752,7 @@ function getEnemyIntentText() {
 function completeNode(message) {
   const current = gameState.currentNode;
   current.cleared = true;
+  current.selected = false;
   gameState.map[current.floor - 1].forEach(function (node) {
     if (node.stage === current.stage && node.id !== current.id) node.cleared = true;
     if (node.stage === current.stage + 1) node.locked = false;
