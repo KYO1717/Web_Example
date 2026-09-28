@@ -198,16 +198,19 @@ li .when {
 .map-stage:last-child .map-options { grid-template-columns: minmax(0, 1fr); }
 .floor-label { color: var(--gray); font-size: 12px; }
 .stage-label { display: flex; align-items: center; color: var(--gray); font-size: 11px; font-weight: 700; }
-.map-node { min-height: 62px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; justify-content: center; gap: 4px; text-align: left; }
+.map-node { min-height: 62px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 4px; text-align: left; }
 .map-node.available { border-color: var(--main); background: #f8f8ff; box-shadow: 0 0 0 2px rgba(99, 102, 241, .08); cursor: pointer; }
 .map-node.selected { border-color: var(--main); background: #eef0ff; color: var(--main); box-shadow: inset 3px 0 0 var(--main); }
-.map-node.available::after { content: "선택"; align-self: flex-end; color: var(--main); font-size: 10px; font-weight: 700; }
 .map-node.available:hover { transform: translateY(-2px); background: #eef0ff; }
 .map-node.boss-node { border-color: #ad6b2f; }
 .map-node.cleared { background: #f4f4f5; color: var(--gray); }
 .map-node.locked { opacity: .45; }
-.node-floor { font-size: 10px; color: var(--gray); }
-.map-node strong { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+.node-floor { order: 2; align-self: flex-end; margin-top: auto; padding: 2px 7px; border-radius: 99px; background: #f4f4f5; color: var(--gray); font-size: 9px; font-weight: 700; line-height: 1.35; }
+.map-node strong { order: 1; display: flex; align-items: center; gap: 4px; font-size: 13px; }
+.node-floor-available { background: #e9eaff; color: #4f46e5; }
+.node-floor-selected { background: #e0e7ff; color: #4338ca; }
+.node-floor-cleared { background: #e7f5ec; color: #287348; }
+.map-node.locked .node-floor { background: #eeeef0; color: #85858d; }
 .battlefield { display: grid; grid-template-columns: 1fr 46px 1fr; align-items: center; gap: 14px; margin: 22px 0 16px; padding: 18px; border: 1px solid var(--line); border-radius: 8px; background: linear-gradient(135deg, #f5fbfc, #fff8f5); }
 .combatant { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .combatant.foe { flex-direction: row-reverse; text-align: right; }
@@ -393,6 +396,8 @@ li .when {
 .game-page .map-floor { height: 100%; align-content: space-between; gap: 5px; }
 .game-page .map-stage { grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
 .game-page .map-node { min-height: 0; height: clamp(43px, 6.6vh, 60px); padding: 5px 9px; }
+.game-page .map-node strong { margin-bottom: auto; }
+.game-page .node-floor { font-size: 8px; }
 .game-page .map-options { gap: 7px; }
 .game-page .combat-panel { display: flex; flex-direction: column; }
 .game-page .battlefield { flex: 0 0 auto; min-height: 114px; margin: 6px 0; padding: 9px 12px; }

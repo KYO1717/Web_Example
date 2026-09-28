@@ -360,9 +360,10 @@ function renderMap() {
 function renderMapNode(node) {
   const stateClass = node.cleared ? "cleared" : node.selected ? "selected" : node.locked ? "locked" : "available";
   const bossClass = node.type === "boss" ? " boss-node" : "";
+  const statusLabel = node.selected ? "진행 중" : node.cleared ? "완료" : node.type === "boss" ? "최종 관문" : node.locked ? "잠김" : "진입 가능";
   return '<button class="map-node ' + stateClass + bossClass + '" data-node-id="' + node.id + '" type="button" ' +
     (node.locked || node.cleared ? "disabled" : "") + ">" +
-    '<span class="node-floor">' + (node.selected ? "진행 중" : node.type === "boss" ? "최종 관문" : node.locked ? "잠김" : "진입 가능") + "</span>" +
+    '<span class="node-floor node-floor-' + stateClass + '">' + statusLabel + "</span>" +
     '<strong><span class="ui-icon" aria-hidden="true">' + NODE_ICONS[node.type] + '</span> ' + NODE_LABELS[node.type] + "</strong></button>";
 }
 
