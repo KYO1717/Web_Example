@@ -2,6 +2,28 @@
 
 const MODEL = "gemini-2.5-flash";
 
+function buildPrompt(body) {
+  const task = body && body.task;
+  if (task === "story" || task === "path-assist" || task === "combat-assist") {
+    const context = body.context;
+    if (!context || typeof context !== "object" || Array.isArray(context)) return null;
+    const contextText = JSON.stringify(context);
+    if (contextText.length > 4000) return null;
+
+    const instructions = {
+      story: "너는 한국어 로그라이크 '별의 기록'의 공동 서술자다. 주어진 게임 상황과 사건 결과에 맞춰 다음 장면의 짧은 서사(2~4문장)를 쓴다. 게임의 실제 규칙·수치·결과를 바꾸거나 새 보상을 약속하지 말고, 주어진 정보 밖의 사실은 단정하지 않는다. 분위기는 신비롭고 간결하게 유지한다.",
+      "path-assist": "너는 한국어 로그라이크 '별의 기록'의 경로 조언자다. 현재 HP, 금화, 기록물, 난이도와 실제로 선택 가능한 노드만 고려해 각 선택의 장단점과 추천 경로를 2~4문장으로 설명한다. 알 수 없는 노드 보상이나 결과를 지어내지 말고, 선택은 플레이어에게 맡긴다.",
+      "combat-assist": "너는 한국어 로그라이크 '별의 기록'의 전투 조언자다. 손패의 실제 카드 효과, 남은 행동 수, 적의 공개된 다음 행동, HP와 방어도에 근거해 지금 취할 수 있는 우선 행동을 2~4문장으로 제안한다. 주어진 정보에 없는 카드나 규칙을 만들지 말고, 추천은 참고용이며 게임 상태를 직접 변경하지 않는다.",
+    };
+    return instructions[task] + "\n\n현재 게임 정보(JSON):\n" + contextText;
+  }
+
+  if (typeof body.prompt === "string" && body.prompt.trim() && body.prompt.length <= 3000) {
+    return body.prompt.trim();
+  }
+  return null;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "POST 로만 부를 수 있습니다." });
@@ -27,11 +49,9 @@ export default async function handler(req, res) {
 
   const key = raw.trim().replace(/^["']|["']$/g, "");
 
-  console.log("키 확인:", { 이름: found, 길이: key.length, 앞4글자: key.slice(0, 4) });
-
-  const { prompt } = req.body || {};
+  const prompt = buildPrompt(req.body || {});
   if (!prompt) {
-    return res.status(400).json({ error: "prompt 가 비어 있습니다." });
+    return res.status(400).json({ error: "AI 작업 정보가 올바르지 않거나 너무 깁니다." });
   }
 
   

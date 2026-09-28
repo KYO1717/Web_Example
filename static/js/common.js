@@ -156,10 +156,11 @@ db.auth.onAuthStateChange(function (event, session) {
 // 같은 사이트의 /api/ai 로만 요청하고, API 키는 서버에만 있습니다.
 
 async function askAI(prompt) {
+  const body = typeof prompt === "string" ? { prompt: prompt } : prompt;
   const res = await fetch("/api/ai", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt: prompt }),
+    body: JSON.stringify(body),
   });
 
   const data = await res.json();

@@ -44,6 +44,7 @@
               <h2>기록의 경로</h2>
             </div>
             <span id="nodeHint" class="muted">노드를 선택하세요.</span>
+            <button id="pathAssistButton" class="secondary-button" type="button">경로 조언 받기</button>
           </div>
           <div id="map" class="map-nodes" aria-label="게임 맵"></div>
         </section>
@@ -99,6 +100,7 @@
           <div class="combat-actions">
             <button id="playButton" type="button" disabled>선택 카드 사용</button>
             <button id="endTurnButton" type="button">턴 종료</button>
+            <button id="combatAssistButton" class="secondary-button" type="button">전투 조언 받기</button>
           </div>
         </section>
 
@@ -137,9 +139,9 @@
         <h2>기록물</h2>
         <div id="relics" class="relic-list"><span class="muted">아직 기록물이 없습니다.</span></div>
         <div class="ai-note">
-          <p class="eyebrow">GEMINI ARCHIVE</p>
-          <p id="aiText">이번 기록에 대한 짧은 해설을 받아보세요.</p>
-          <button id="aiButton" type="button">해설 받기</button>
+          <p class="eyebrow">GENERATIVE CHRONICLE</p>
+          <p id="aiText" aria-live="polite">노드를 선택하면 현재 여정에 맞는 이야기가 펼쳐집니다.</p>
+          <button id="aiButton" class="secondary-button" type="button">현재 상황 해설</button>
         </div>
       </aside>
     </section>

@@ -51,6 +51,8 @@ const gameState = {
   runEnded: false,
 };
 
+let aiRequestVersion = 0;
+
 function createCard(id, rank) {
   return { id: id, rank: rank, uid: id + "-" + rank + "-" + Math.random().toString(36).slice(2) };
 }
@@ -83,6 +85,7 @@ function resetGame(difficultyId) {
   gameState.reward = null;
   gameState.relics = [];
   gameState.runEnded = false;
+  aiRequestVersion += 1;
   document.getElementById("resultPanel").hidden = true;
   document.getElementById("difficultyPanel").hidden = true;
   renderAll();
@@ -211,6 +214,7 @@ function selectNode(nodeId) {
     openEvent();
   }
   renderAll();
+  requestNodeStory("entry");
 }
 
 function openEvent() {
@@ -752,6 +756,7 @@ function completeNode(message) {
     });
   }
   document.getElementById("nodeHint").textContent = message;
+  requestNodeStory("outcome", message);
 }
 
 function endRun(won, message) {
@@ -762,6 +767,7 @@ function endRun(won, message) {
   document.getElementById("resultText").textContent = message;
   document.getElementById("resultPanel").hidden = false;
   gameState.combat = null;
+  requestNodeStory("run-ended", message);
 }
 
 function saveGameResult(won, message) {
@@ -818,14 +824,100 @@ function renderRelics() {
     : '<span class="muted">아직 기록물이 없습니다.</span>';
 }
 
-async function requestArchiveNote() {
+function buildStoryContext(phase, outcome) {
+  const node = gameState.currentNode;
+  return {
+    phase: phase,
+    outcome: outcome || "",
+    floor: gameState.floor,
+    node: node ? { type: NODE_LABELS[node.type], stage: node.stage + 1 } : null,
+    difficulty: (DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1]).name,
+    player: { hp: gameState.hp, maxHp: gameState.maxHp, gold: gameState.gold },
+    relics: gameState.relics.map(function (relic) { return RELIC_LIBRARY[relic.id].name; }),
+    enemy: gameState.combat ? {
+      name: gameState.combat.enemyName,
+      hp: gameState.combat.enemyHp,
+      maxHp: gameState.combat.enemyMaxHp,
+      lastAction: gameState.combat.lastEnemyAction,
+    } : null,
+  };
+}
+
+async function requestContextualAI(task, context, buttonId) {
+  const version = ++aiRequestVersion;
   const text = document.getElementById("aiText");
-  text.textContent = "기록을 읽는 중...";
-  try {
-    text.textContent = await askAI("로그라이크 게임의 현재 상황을 신비로운 기록 보관자의 말투로 한 문장만 해설해줘. 현재 층: " + gameState.floor + ", HP: " + gameState.hp + ", 기록물: " + gameState.relics.map(function (relic) { return RELIC_LIBRARY[relic.id].name; }).join(", "));
-  } catch (error) {
-    text.textContent = "기록 보관소에 연결하지 못했습니다.";
+  const button = buttonId ? document.getElementById(buttonId) : null;
+  const originalLabel = button ? button.textContent : "";
+  if (button) {
+    button.disabled = true;
+    button.textContent = "AI가 살펴보는 중...";
   }
+  text.textContent = task === "story" ? "이번 장면을 기록하는 중..." : "현재 상황을 분석하는 중...";
+  try {
+    const answer = await askAI({ task: task, context: context });
+    if (version === aiRequestVersion) text.textContent = answer;
+  } catch (error) {
+    if (version === aiRequestVersion) text.textContent = "AI 기록소에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+    console.error("게임 AI 요청 실패:", error);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.textContent = originalLabel;
+    }
+  }
+}
+
+function requestNodeStory(phase, outcome) {
+  requestContextualAI("story", buildStoryContext(phase, outcome));
+}
+
+function requestPathAdvice() {
+  const availableNodes = (gameState.map[gameState.floor - 1] || []).filter(function (node) {
+    return !node.locked && !node.cleared;
+  }).map(function (node) {
+    return { type: NODE_LABELS[node.type], stage: node.stage + 1 };
+  });
+  requestContextualAI("path-assist", {
+    floor: gameState.floor,
+    difficulty: (DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1]).name,
+    hp: gameState.hp,
+    maxHp: gameState.maxHp,
+    gold: gameState.gold,
+    relics: gameState.relics.map(function (relic) { return RELIC_LIBRARY[relic.id].name; }),
+    availableNodes: availableNodes,
+  }, "pathAssistButton");
+}
+
+function requestCombatAdvice() {
+  if (!gameState.combat || gameState.combat.turn !== "player") return;
+  requestContextualAI("combat-assist", {
+    floor: gameState.floor,
+    hp: gameState.hp,
+    maxHp: gameState.maxHp,
+    block: gameState.combat.block,
+    actionsRemaining: gameState.combat.actionsRemaining,
+    enemy: {
+      name: gameState.combat.enemyName,
+      hp: gameState.combat.enemyHp,
+      intent: getEnemyIntentText(),
+      block: gameState.combat.enemyBlock,
+      damageOverTime: gameState.combat.damageOverTime,
+      damageOverTimeTurns: gameState.combat.damageOverTimeTurns,
+    },
+    hand: gameState.hand.map(function (card) {
+      return {
+        name: CARD_LIBRARY[card.id].name,
+        rank: card.rank,
+        value: getCardValue(card),
+        description: CARD_LIBRARY[card.id].description,
+        selected: gameState.selectedCards.includes(card.uid),
+      };
+    }),
+  }, "combatAssistButton");
+}
+
+function requestArchiveNote() {
+  requestNodeStory("run-summary", "현재 여정의 상황을 기록 보관자의 목소리로 요약해 주세요.");
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -833,4 +925,6 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("endTurnButton").addEventListener("click", endTurn);
   document.getElementById("restartButton").addEventListener("click", resetGame);
   document.getElementById("aiButton").addEventListener("click", requestArchiveNote);
+  document.getElementById("pathAssistButton").addEventListener("click", requestPathAdvice);
+  document.getElementById("combatAssistButton").addEventListener("click", requestCombatAdvice);
 });
