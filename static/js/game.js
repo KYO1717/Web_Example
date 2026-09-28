@@ -669,6 +669,7 @@ function renderCombat() {
   const panel = document.getElementById("combatPanel");
   if (!gameState.combat) {
     panel.hidden = true;
+    panel.classList.remove("enemy-turn-active", "enemy-action-active");
     return;
   }
   panel.hidden = false;
@@ -677,14 +678,16 @@ function renderCombat() {
   document.getElementById("enemyHp").textContent = "❤️ " + gameState.combat.enemyHp + " / " + gameState.combat.enemyMaxHp;
   document.getElementById("enemyBarFill").style.width = Math.max(0, gameState.combat.enemyHp / gameState.combat.enemyMaxHp * 100) + "%";
   const playerTurn = gameState.combat.turn === "player";
+  panel.classList.toggle("enemy-turn-active", !playerTurn);
+  if (playerTurn) panel.classList.remove("enemy-action-active");
   document.getElementById("turnIndicator").textContent = playerTurn ? "기록자 차례" : "몬스터 차례";
   document.getElementById("turnIndicator").className = playerTurn ? "player-turn" : "enemy-turn";
-  document.getElementById("actionCounter").textContent = playerTurn ? "⚡ 행동 " + gameState.combat.actionsRemaining + " / 2" : "👹 몬스터 행동 중";
+  document.getElementById("actionCounter").textContent = playerTurn ? "⚡ 행동 " + gameState.combat.actionsRemaining + " / 2" : "👹 " + gameState.combat.enemyName + "의 행동";
   document.getElementById("turnOrder").textContent = playerTurn ? "행동 2회 후 몬스터 공격" : "몬스터 행동 후 기록자 차례";
   document.getElementById("playerHp").textContent = "❤️ " + gameState.hp + " / " + gameState.maxHp;
   document.getElementById("playerBarFill").style.width = Math.max(0, gameState.hp / gameState.maxHp * 100) + "%";
   document.getElementById("playerBlock").textContent = "🛡️ 방어도 " + gameState.combat.block;
-  document.getElementById("enemyIntent").textContent = playerTurn ? getEnemyIntentText() : "행동 중...";
+  document.getElementById("enemyIntent").textContent = playerTurn ? getEnemyIntentText() : "준비 중 · " + getEnemyIntentText();
   document.getElementById("enemyAction").textContent = gameState.combat.lastEnemyAction;
   document.getElementById("selectionHint").textContent = playerTurn ? "같은 카드가 이웃하면 자동 합성 · 끌어 놓아 직접 합성" : "몬스터가 행동하고 있습니다.";
   document.getElementById("playButton").disabled = !playerTurn || gameState.selectedCards.length !== 1;
@@ -859,9 +862,14 @@ function endTurn() {
   renderAll();
 }
 
-function enemyTurn(playerAction) {
+async function enemyTurn(playerAction) {
   if (!gameState.combat) return;
   gameState.combat.turn = "enemy";
+  document.getElementById("combatLog").textContent = playerAction + " " + gameState.combat.enemyName + "이(가) 행동을 준비합니다...";
+  renderAll();
+  await new Promise(function (resolve) { setTimeout(resolve, 850); });
+  if (!gameState.combat || gameState.combat.turn !== "enemy") return;
+
   let damageOverTimeMessage = "";
   if (gameState.combat.damageOverTimeTurns > 0) {
     gameState.combat.enemyHp -= gameState.combat.damageOverTime;
@@ -869,10 +877,21 @@ function enemyTurn(playerAction) {
     damageOverTimeMessage = " 지속 피해 " + gameState.combat.damageOverTime + " 적용.";
     if (gameState.combat.enemyHp <= 0) {
       checkCombatEnd();
+      renderAll();
       return;
     }
   }
   const intent = gameState.combat.enemyIntent;
+  const intentText = getEnemyIntentText();
+  const combatPanel = document.getElementById("combatPanel");
+  combatPanel.classList.add("enemy-action-active");
+  document.getElementById("enemyIntent").textContent = "💥 " + intentText + "!";
+  document.getElementById("combatLog").textContent = gameState.combat.enemyName + "이(가) " + intentText + "!";
+  renderAll();
+  await new Promise(function (resolve) { setTimeout(resolve, 220); });
+  combatPanel.classList.remove("enemy-action-active");
+  if (!gameState.combat || gameState.combat.turn !== "enemy") return;
+
   let damage = 0;
   if (intent === "block") {
     gameState.combat.enemyBlock = 8;
@@ -897,6 +916,7 @@ function enemyTurn(playerAction) {
   gameState.combat.actionsRemaining = hasRelic("missingPage") ? 1 : 2;
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 몬스터에게 " + damage + " 피해를 받았습니다. 기록자 차례입니다.";
+  renderAll();
 }
 
 function checkCombatEnd() {
@@ -905,6 +925,7 @@ function checkCombatEnd() {
   const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
   const reward = Math.round((node.type === "boss" ? 40 : node.type === "elite" ? 20 : 10) * difficulty.reward) +
     (gameState.relics.some(function (relic) { return relic.id === "starMap"; }) ? 5 : 0);
+  const defeatedEnemy = gameState.combat.enemyName;
   gameState.gold += reward;
   gameState.combat = null;
   const finalBoss = node.type === "boss" && node.floor === 3;
@@ -912,6 +933,8 @@ function checkCombatEnd() {
   if (finalBoss) endRun(true, "세 층의 던전을 돌파하고 왕관 슬라임 대왕을 물리쳤습니다!");
   else {
     gameState.reward = { open: true };
+    document.getElementById("rewardTitle").textContent = "🏆 전투 승리!";
+    document.getElementById("rewardText").textContent = "쓰러뜨린 몬스터: " + defeatedEnemy + ". 🪙 금화 " + reward + "개를 얻었습니다. 전리품을 선택하세요.";
     document.getElementById("nodeHint").textContent = "전투 보상을 선택하세요.";
     showGameScreen("rewardScreen");
   }
@@ -960,7 +983,10 @@ function endRun(won, message) {
     gameState.runScore += Math.round(500 * difficulty.scoreMultiplier);
   }
   const progress = saveGameResult(won, message);
-  document.getElementById("resultTitle").textContent = won ? "모험 완수" : "모험 실패";
+  const resultPanel = document.getElementById("resultPanel");
+  resultPanel.classList.toggle("is-victory", won);
+  resultPanel.classList.toggle("is-defeat", !won);
+  document.getElementById("resultTitle").textContent = won ? "🏆 전투 승리 · 모험 완수!" : "💔 전투 패배 · 모험 실패";
   document.getElementById("resultText").textContent = message;
   const scoreResult = document.getElementById("scoreResult");
   if (progress) {
@@ -978,7 +1004,7 @@ function endRun(won, message) {
     document.getElementById("finalRank").textContent = "-";
     document.getElementById("rankUpNotice").hidden = true;
   }
-  document.getElementById("resultPanel").hidden = false;
+  resultPanel.hidden = false;
   gameState.combat = null;
   showGameScreen("resultScreen");
   renderStats();

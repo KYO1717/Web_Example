@@ -24,6 +24,7 @@ let currentUser = null;
 
 const MENU = [
   { name: "홈", url: "/index.html" },
+  { name: "튜토리얼", url: "/pages/tutorial.html" },
   { name: "게임", url: "/pages/game.html" },
   { name: "모험 기록", url: "/pages/mypage.html" },
 ];

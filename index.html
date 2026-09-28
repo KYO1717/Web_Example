@@ -12,7 +12,12 @@
   <header id="nav"></header>
 
   <main>
-    <h1>기록자의 모험</h1>
+    <section class="home-hero">
+      <p class="eyebrow">A FANTASY CARD ADVENTURE</p>
+      <h1>기록자의 모험</h1>
+      <p class="home-lead">기록자가 되어 던전을 탐험하고, 왕관 슬라임의 성채에 도전하세요.</p>
+      <a class="tutorial-quick-link" href="/pages/tutorial.html">📖 처음이신가요? 상세 튜토리얼 보기 <span>→</span></a>
+    </section>
 
     <!-- 로그인 안 했을 때 -->
     <section id="loginBox" class="card" hidden>
@@ -31,12 +36,15 @@
     <!-- 로그인 했을 때 -->
     <section id="welcomeBox" class="card" hidden>
       <p id="hello"></p>
-      <a class="btn" href="/pages/game.html">⚔️ 던전 탐험 시작</a>
+      <div class="home-actions">
+        <a class="btn home-play-button" href="/pages/game.html">⚔️ 던전 탐험 시작</a>
+        <a class="btn tutorial-home-button" href="/pages/tutorial.html">📖 튜토리얼 플레이</a>
+      </div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/static/js/common.js"></script>
+  <script src="/static/js/common.js?v=2"></script>
   <script src="/static/js/home.js"></script>
 
 </body>

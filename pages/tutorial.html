@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>초보 모험가 안내서 · 기록자의 모험</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="tutorial-page">
+  <header id="nav"></header>
+
+  <main class="tutorial-main">
+    <section class="tutorial-hero">
+      <div>
+        <p class="eyebrow">ADVENTURER'S FIELD GUIDE</p>
+        <h1>첫 던전 안내서</h1>
+        <p>길을 고르고, 전법을 익히고, 왕관 슬라임과 맞서 보세요. 진행은 연습용이며 실제 모험 기록에는 영향을 주지 않습니다.</p>
+      </div>
+      <a class="btn tutorial-start-link" href="/pages/game.html">⚔️ 바로 모험 시작</a>
+    </section>
+
+    <section class="tutorial-shell" aria-label="인터랙티브 튜토리얼">
+      <nav class="tutorial-steps" aria-label="튜토리얼 단계">
+        <button class="tutorial-step-button active" data-step-target="0" type="button"><span>1</span> 모험 준비</button>
+        <button class="tutorial-step-button" data-step-target="1" type="button"><span>2</span> 던전 지도</button>
+        <button class="tutorial-step-button" data-step-target="2" type="button"><span>3</span> 카드 전투</button>
+        <button class="tutorial-step-button" data-step-target="3" type="button"><span>4</span> 카드 합성</button>
+        <button class="tutorial-step-button" data-step-target="4" type="button"><span>5</span> 보상과 성장</button>
+      </nav>
+
+      <div class="tutorial-progress" aria-label="튜토리얼 진행도"><span id="tutorialProgressFill"></span></div>
+
+      <section class="tutorial-slide active" data-tutorial-step="0">
+        <div class="tutorial-copy">
+          <p class="eyebrow">01 / GET READY</p>
+          <h2>기록자와 함께 모험을 떠나요</h2>
+          <p>세 층으로 이어진 던전을 탐험하고 마지막 관문을 돌파하는 것이 목표입니다. 각 구역에서 한 노드를 골라 해결하면 다음 길이 열립니다.</p>
+          <ul class="tutorial-list">
+            <li><strong>전투 방식</strong>은 시작 덱과 카드 특성을 정합니다. 모험가·검투사·독술사·성기사 중 하나를 고르세요.</li>
+            <li><strong>던전 위험도</strong>가 높을수록 몬스터가 강해지지만, 획득하는 명성 점수 배율도 커집니다.</li>
+            <li>생명력이 0이 되면 모험은 끝납니다. 유물, 금화, 회복 기회를 살펴 가며 진행하세요.</li>
+          </ul>
+          <div class="tutorial-callout">💡 처음이라면 <strong>I · 초심자의 숲</strong>과 <strong>모험가</strong> 전법을 추천합니다.</div>
+        </div>
+        <div class="tutorial-art-card"><span>🧭</span><strong>모험의 목표</strong><small>길 선택 → 전투와 사건 → 유물 수집 → 최종 관문</small></div>
+      </section>
+
+      <section class="tutorial-slide" data-tutorial-step="1" hidden>
+        <div class="tutorial-copy">
+          <p class="eyebrow">02 / CHOOSE A PATH</p>
+          <h2>한 구역에서 한 길만 선택합니다</h2>
+          <p>각 구역에는 여러 노드가 있지만, 선택 가능한 노드 하나를 해결해야 다음 구역으로 이동할 수 있습니다. 선택하지 않은 갈래는 닫힙니다.</p>
+          <ul class="tutorial-list">
+            <li><strong>⚔️ 전투</strong>는 금화와 전리품을 얻을 기회입니다.</li>
+            <li><strong>❔ 수상한 조우</strong>는 카드 강화, 회복, 유물 중 하나를 고르는 사건입니다.</li>
+            <li><strong>🧙 떠돌이 상인</strong>에게 금화를 내고 카드 강화나 유물을 살 수 있습니다.</li>
+            <li><strong>💀 정예 몬스터</strong>와 <strong>👑 던전 우두머리</strong>는 위험하지만 점수와 보상이 큽니다.</li>
+          </ul>
+        </div>
+        <div class="tutorial-map-demo">
+          <div class="tutorial-demo-heading"><span>🗺️ 제1구역 · 연습 선택</span><small id="routeChoiceMessage">노드를 골라 보세요</small></div>
+          <div class="tutorial-route-options">
+            <button class="tutorial-route-choice" data-route-choice="battle" type="button"><span>⚔️</span><strong>전투</strong><small>위험 · 금화와 전리품</small></button>
+            <button class="tutorial-route-choice" data-route-choice="shop" type="button"><span>🧙</span><strong>상인</strong><small>안전 · 금화로 성장</small></button>
+          </div>
+          <div class="tutorial-next-preview">↓ 선택한 길을 해결하면 다음 구역이 열립니다</div>
+        </div>
+      </section>
+
+      <section class="tutorial-slide" data-tutorial-step="2" hidden>
+        <div class="tutorial-copy">
+          <p class="eyebrow">03 / CARD BATTLE</p>
+          <h2>행동 두 번으로 차례를 운영하세요</h2>
+          <p>기본적으로 기록자는 한 차례에 카드 행동을 두 번 합니다. 카드를 골라 실행하고, 몬스터의 예고된 행동에 맞춰 공격·방어·회복을 조합하세요.</p>
+          <ul class="tutorial-list">
+            <li><strong>⚔️ 강타</strong>: 즉시 피해를 줍니다. 몬스터가 독에 걸려 있으면 추가 피해가 붙습니다.</li>
+            <li><strong>☠️ 맹독</strong>: 여러 차례에 걸쳐 피해를 줍니다. 강한 적에게 미리 걸어 두세요.</li>
+            <li><strong>🛡️ 방패술</strong>: 다음 공격을 막을 방어도를 얻습니다.</li>
+            <li><strong>💚 치유</strong>: 생명력을 회복합니다. 차례가 끝나기 전에 사용해야 합니다.</li>
+          </ul>
+          <div class="tutorial-callout">적의 의도와 공격 수치는 적 차례 전에 표시됩니다. 강한 일격이 예고되면 방어를 고려하세요.</div>
+        </div>
+        <div class="tutorial-battle-demo" id="tutorialBattleDemo">
+          <div class="tutorial-demo-heading"><span>⚔️ 연습 전투</span><span id="tutorialTurnBadge" class="tutorial-turn-badge">기록자 차례</span></div>
+          <div class="tutorial-battle-stats">
+            <div><span>기록자 ❤️</span><strong id="tutorialPlayerHp">20 / 20</strong><div class="tutorial-mini-bar"><i id="tutorialPlayerBar"></i></div></div>
+            <div><span>왕관 슬라임 👑</span><strong id="tutorialEnemyHp">18 / 18</strong><div class="tutorial-mini-bar enemy"><i id="tutorialEnemyBar"></i></div><small id="tutorialEnemyGuard">🛡️ 방어도 0</small></div>
+          </div>
+          <p id="tutorialIntent" class="tutorial-intent">예고: ⚔️ 공격 · 피해 4</p>
+          <p id="tutorialBattleLog" class="tutorial-battle-log" aria-live="polite">카드를 골라 연습해 보세요. 두 번 행동하면 몬스터가 반격합니다.</p>
+          <div class="tutorial-action-line"><strong id="tutorialActions">행동 2회 남음</strong><small>연습은 실제 기록에 저장되지 않습니다.</small></div>
+          <div class="tutorial-demo-cards">
+            <button class="tutorial-card" data-tutorial-card="strike" type="button"><strong>⚔️ 강타</strong><span>피해 7</span></button>
+            <button class="tutorial-card" data-tutorial-card="shield" type="button"><strong>🛡️ 방패술</strong><span>방어도 6</span></button>
+            <button class="tutorial-card" data-tutorial-card="heal" type="button"><strong>💚 치유</strong><span>회복 5</span></button>
+            <button class="tutorial-card" data-tutorial-card="poison" type="button"><strong>☠️ 맹독</strong><span>2회 피해 3</span></button>
+          </div>
+          <button id="tutorialBattleReset" class="secondary-button" type="button">연습 전투 다시 시작</button>
+        </div>
+      </section>
+
+      <section class="tutorial-slide" data-tutorial-step="3" hidden>
+        <div class="tutorial-copy">
+          <p class="eyebrow">04 / FUSE YOUR CARDS</p>
+          <h2>같은 카드 두 장을 합성해 강화하세요</h2>
+          <p>전투 손패에 같은 종류와 등급의 카드가 나란히 있으면 자동 합성됩니다. 직접 합성하려면 같은 카드 두 장을 드래그해 서로 겹치면 됩니다.</p>
+          <ul class="tutorial-list">
+            <li>합성하면 두 장이 한 장으로 바뀌고 등급이 올라가 효과가 강해집니다.</li>
+            <li>직접 합성은 행동 한 번을 사용하므로, 적의 다음 행동도 살펴보세요.</li>
+            <li>최대 등급 카드나 종류가 다른 카드는 합성할 수 없습니다.</li>
+          </ul>
+        </div>
+        <div class="tutorial-fusion-demo">
+          <div class="tutorial-demo-heading"><span>🃏 합성 연습</span><small>강타 1등급 두 장을 선택하세요</small></div>
+          <div class="tutorial-fusion-cards">
+            <button class="fusion-card" data-fusion-card="left" type="button"><span>1등급</span><strong>⚔️ 강타</strong><small>피해 7</small></button>
+            <button class="fusion-card" data-fusion-card="right" type="button"><span>1등급</span><strong>⚔️ 강타</strong><small>피해 7</small></button>
+            <span class="fusion-arrow">→</span>
+            <div id="fusionResult" class="fusion-card fusion-result"><span>결과</span><strong>⚔️ 강타</strong><small>2등급 · 피해 14</small></div>
+          </div>
+          <p id="fusionHint" class="tutorial-battle-log" aria-live="polite">두 카드를 차례로 선택하세요.</p>
+          <button id="fusionButton" class="primary-button" type="button" disabled>행동 1회 사용 · 카드 합성</button>
+        </div>
+      </section>
+
+      <section class="tutorial-slide" data-tutorial-step="4" hidden>
+        <div class="tutorial-copy">
+          <p class="eyebrow">05 / LOOT & GROW</p>
+          <h2>전리품과 명성으로 다음 모험을 준비하세요</h2>
+          <p>전투에서 이기면 금화와 전리품 선택지를 얻습니다. 노드를 해결할 때마다 점수가 쌓이고, 모험이 끝나면 점수가 누적되어 명성 등급이 올라갑니다.</p>
+          <ul class="tutorial-list">
+            <li><strong>유물</strong>은 금화 보너스나 카드 강화 같은 지속 효과를 줍니다. 저주 유물은 강한 효과와 대가를 함께 가질 수 있습니다.</li>
+            <li><strong>난이도 배율</strong>은 I단계 ×1부터 V단계 ×2.2까지 높아집니다. 어려울수록 더 많은 명성을 얻습니다.</li>
+            <li><strong>길잡이 조언</strong>은 맵의 경로 선택을, <strong>전투 조언</strong>은 손패와 적의 의도를 바탕으로 추천합니다. 결정과 행동은 플레이어가 직접 합니다.</li>
+          </ul>
+          <div class="tutorial-callout">튜토리얼의 지도·전투·합성은 연습용입니다. 실제 점수나 전적은 변경되지 않습니다.</div>
+          <a class="btn tutorial-start-link" href="/pages/game.html">⚔️ 이제 실제 모험 시작</a>
+        </div>
+        <div class="tutorial-reward-demo">
+          <span>🏆</span><strong>도전할수록 명성이 쌓입니다</strong><div class="tutorial-rank-list"><span>견습 기록자</span><i>→</i><span>숙련 기록자</span><i>→</i><span>전설의 기록자</span></div><small>높은 위험도 · 더 큰 명성</small>
+        </div>
+      </section>
+
+      <footer class="tutorial-controls">
+        <button id="tutorialBack" class="secondary-button" type="button" disabled>← 이전</button>
+        <span id="tutorialStepLabel">1 / 5</span>
+        <button id="tutorialNext" class="primary-button" type="button">시작하기 →</button>
+      </footer>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/static/js/common.js?v=2"></script>
+  <script src="/static/js/tutorial.js"></script>
+</body>
+</html>

@@ -80,7 +80,7 @@
               <p class="eyebrow">MONSTER ENCOUNTER</p>
               <h2 id="enemyName">왕관 슬라임</h2>
             </div>
-            <div class="turn-status">
+            <div class="turn-status" aria-live="polite">
                 <strong id="turnIndicator">기록자 차례</strong>
               <span id="actionCounter">행동 2 / 2</span>
                 <span id="turnOrder">행동 2회 후 몬스터 차례</span>
@@ -115,7 +115,7 @@
               </div>
             </div>
           </div>
-          <p id="combatLog" class="combat-log">전법을 골라 기록자를 지키세요.</p>
+          <p id="combatLog" class="combat-log" aria-live="polite">전법을 골라 기록자를 지키세요.</p>
 
           <div class="hand-heading">
             <h3><span class="ui-icon" aria-hidden="true">🃏</span> 전투 카드</h3>
@@ -141,9 +141,9 @@
 
         <section id="rewardScreen" class="game-screen" aria-label="전리품 선택">
         <section id="rewardPanel" class="game-panel reward-panel" hidden>
-          <p class="eyebrow">TREASURE</p>
-          <h2>전리품</h2>
-          <p class="event-copy">전투에서 얻은 기회를 다음 싸움에 유리하게 활용하세요.</p>
+          <p class="eyebrow">BATTLE RESULT</p>
+          <h2 id="rewardTitle">🏆 전투 승리!</h2>
+          <p id="rewardText" class="event-copy">몬스터를 물리쳤습니다. 전리품을 선택하세요.</p>
           <div id="rewardChoices" class="event-choices"></div>
         </section>
         </section>
@@ -199,7 +199,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/static/js/common.js"></script>
+  <script src="/static/js/common.js?v=2"></script>
   <script src="/static/js/game.js"></script>
 </body>
 </html>
