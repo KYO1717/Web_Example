@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
-<body data-require-auth="true">
+<body class="game-page" data-require-auth="true">
   <header id="nav"></header>
 
   <main class="game-main">
@@ -22,6 +22,7 @@
         <strong><span id="floorValue">1</span><small> / 3</small></strong>
         <div class="floor-dots" aria-hidden="true"><i class="active"></i><i></i><i></i></div>
       </div>
+      <button id="recordsButton" class="secondary-button records-button" type="button">📜 모험 전적</button>
       <div class="run-stats">
         <div class="stat-chip"><span><span class="ui-icon" aria-hidden="true">❤️</span> 생명력</span><strong id="hpValue">30 / 30</strong></div>
         <div class="stat-chip"><span><span class="ui-icon" aria-hidden="true">🪙</span> 소지금</span><strong id="goldValue">0</strong></div>
@@ -36,17 +37,29 @@
     </section>
 
     <section class="game-layout">
-      <div>
+      <div class="game-screen-stack">
+        <section id="setupScreen" class="game-screen" aria-label="모험 준비">
         <section id="difficultyPanel" class="game-panel difficulty-panel" hidden>
           <p class="eyebrow">PREPARE FOR ADVENTURE</p>
           <h2>모험을 준비하세요</h2>
-          <p class="event-copy">전투 방식을 고르고 던전의 위험도를 정하세요. 더 위험한 던전일수록 명성을 많이 얻습니다.</p>
-          <h3 class="choice-section-title">1. 전투 방식 선택</h3>
+          <p class="event-copy">기록자가 익힐 전투 방식을 선택하세요.</p>
           <div id="buildChoices" class="build-choices"></div>
-          <h3 class="choice-section-title">2. 던전 위험도</h3>
-          <div id="difficultyChoices" class="difficulty-choices" hidden></div>
+          <div class="screen-footer"><span id="buildSelectionHint" class="muted">전투 방식을 고르면 다음 단계로 넘어갈 수 있습니다.</span><button id="difficultyContinueButton" class="primary-button" type="button" disabled>던전 위험도 선택 →</button></div>
+        </section>
         </section>
 
+        <section id="difficultyScreen" class="game-screen" aria-label="던전 위험도 선택">
+          <section class="game-panel difficulty-panel difficulty-screen-panel">
+            <div class="records-heading">
+              <div><p class="eyebrow">CHOOSE YOUR CHALLENGE</p><h2>던전 위험도</h2></div>
+              <button id="difficultyBackButton" class="secondary-button" type="button">← 전투 방식</button>
+            </div>
+            <p class="event-copy">높은 위험도일수록 몬스터는 강해지지만, 획득 명성 배율도 올라갑니다.</p>
+            <div id="difficultyChoices" class="difficulty-choices"></div>
+          </section>
+        </section>
+
+        <section id="mapScreen" class="game-screen" aria-label="던전 지도">
         <section class="game-panel map-panel">
           <div class="panel-title">
             <div>
@@ -58,7 +71,9 @@
           </div>
           <div id="map" class="map-nodes" aria-label="게임 맵"></div>
         </section>
+        </section>
 
+        <section id="combatScreen" class="game-screen" aria-label="전투">
         <section id="combatPanel" class="game-panel combat-panel" hidden>
           <div class="panel-title">
             <div>
@@ -113,21 +128,27 @@
             <button id="combatAssistButton" class="secondary-button" type="button"><span class="ui-icon" aria-hidden="true">🧙</span> 전투 조언</button>
           </div>
         </section>
+        </section>
 
+        <section id="eventScreen" class="game-screen" aria-label="수상한 조우">
         <section id="eventPanel" class="game-panel event-panel" hidden>
           <p class="eyebrow">MYSTERIOUS ENCOUNTER</p>
           <h2>수상한 조우</h2>
           <p class="event-copy">던전에서 마주친 기이한 존재가 선택을 기다립니다. 하나를 고르세요.</p>
           <div id="eventChoices" class="event-choices"></div>
         </section>
+        </section>
 
+        <section id="rewardScreen" class="game-screen" aria-label="전리품 선택">
         <section id="rewardPanel" class="game-panel reward-panel" hidden>
           <p class="eyebrow">TREASURE</p>
           <h2>전리품</h2>
           <p class="event-copy">전투에서 얻은 기회를 다음 싸움에 유리하게 활용하세요.</p>
           <div id="rewardChoices" class="event-choices"></div>
         </section>
+        </section>
 
+        <section id="shopScreen" class="game-screen" aria-label="떠돌이 상인">
         <section id="shopPanel" class="game-panel shop-panel" hidden>
           <p class="eyebrow">TRAVELING MERCHANT</p>
           <h2>떠돌이 상인</h2>
@@ -135,7 +156,9 @@
           <p id="shopMessage" class="shop-message">현재 금화로 상품을 구매할 수 있습니다.</p>
           <div id="shopChoices" class="shop-choices"></div>
         </section>
+        </section>
 
+        <section id="resultScreen" class="game-screen" aria-label="모험 결과">
         <section id="resultPanel" class="game-panel result-panel" hidden>
           <p class="eyebrow">ADVENTURE'S END</p>
           <h2 id="resultTitle"></h2>
@@ -148,9 +171,21 @@
           </div>
           <button id="restartButton" type="button">새 모험 떠나기</button>
         </section>
+        </section>
+
+        <section id="recordsScreen" class="game-screen records-screen" aria-label="모험 전적">
+          <section class="game-panel records-panel">
+            <div class="records-heading">
+              <div><p class="eyebrow">ADVENTURE LOG</p><h2>📜 모험 전적</h2></div>
+              <button id="recordsBackButton" class="secondary-button" type="button">← 모험으로 돌아가기</button>
+            </div>
+            <div id="recordsSummary" class="records-summary"></div>
+            <ol id="gameHistoryList" class="game-history-list"></ol>
+          </section>
+        </section>
       </div>
 
-      <aside class="game-panel relic-panel">
+      <aside id="adventureSidebar" class="game-panel relic-panel">
         <p class="eyebrow">ADVENTURER'S SATCHEL</p>
         <h2><span class="ui-icon" aria-hidden="true">🎒</span> 소지 유물</h2>
         <div id="relics" class="relic-list"><span class="muted">아직 발견한 유물이 없습니다.</span></div>

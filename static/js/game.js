@@ -98,6 +98,58 @@ const gameState = {
 };
 
 let aiRequestVersion = 0;
+let activeGameScreen = "setupScreen";
+let screenBeforeRecords = "setupScreen";
+
+function showGameScreen(screenId) {
+  activeGameScreen = screenId;
+  document.querySelectorAll(".game-screen").forEach(function (screen) {
+    const active = screen.id === screenId;
+    screen.classList.toggle("active", active);
+    screen.setAttribute("aria-hidden", active ? "false" : "true");
+  });
+  document.body.dataset.gameScreen = screenId;
+}
+
+function openRecords() {
+  screenBeforeRecords = activeGameScreen;
+  renderAdventureHistory();
+  showGameScreen("recordsScreen");
+}
+
+function closeRecords() {
+  showGameScreen(screenBeforeRecords);
+}
+
+function renderAdventureHistory() {
+  const progress = loadPlayerProgress();
+  const rank = getRankInfo(progress.totalScore);
+  document.getElementById("recordsSummary").innerHTML =
+    '<div><span>누적 명성</span><strong>✨ ' + progress.totalScore.toLocaleString("ko-KR") + '점</strong></div>' +
+    '<div><span>현재 등급</span><strong>🏅 ' + rank.name + '</strong></div>' +
+    '<div><span>떠난 모험</span><strong>🗺️ ' + progress.totalRuns + '회</strong></div>';
+
+  let history = [];
+  try {
+    history = currentUser ? JSON.parse(localStorage.getItem("archive-game-history-" + currentUser.id) || "[]") : [];
+  } catch (error) {
+    console.error("모험 전적을 읽지 못했습니다:", error);
+  }
+  const list = document.getElementById("gameHistoryList");
+  if (!history.length) {
+    list.innerHTML = '<li class="muted">아직 떠난 모험이 없습니다. 지도를 펼쳐 첫 여정을 시작하세요.</li>';
+    return;
+  }
+  list.innerHTML = history.map(function (run) {
+    const relics = run.relics && run.relics.length ? run.relics.join(" · ") : "없음";
+    return '<li class="game-history-item ' + (run.won ? "won" : "lost") + '">' +
+      '<div class="game-history-title"><strong>' + (run.won ? "🏆 모험 완수" : "🪦 모험 실패") + '</strong><time>' + new Date(run.playedAt).toLocaleString("ko-KR") + '</time></div>' +
+      '<span>' + run.difficulty + ' · ' + (run.build || "모험가") + ' · ' + run.floor + '층 도달</span>' +
+      '<span>❤️ ' + run.hp + '/' + run.maxHp + '　🪙 ' + run.gold + '　✨ +' + (run.score || 0).toLocaleString("ko-KR") + '점 · ' + (run.rank || "견습 기록자") + '</span>' +
+      '<small>유물: ' + relics + '</small>' +
+      '</li>';
+  }).join("");
+}
 
 function createCard(id, rank) {
   return { id: id, rank: rank, uid: id + "-" + rank + "-" + Math.random().toString(36).slice(2) };
@@ -132,7 +184,7 @@ function resetGame(difficultyId) {
   gameState.runEnded = false;
   aiRequestVersion += 1;
   document.getElementById("resultPanel").hidden = true;
-  document.getElementById("difficultyPanel").hidden = true;
+  showGameScreen("mapScreen");
   renderAll();
 }
 
@@ -141,7 +193,6 @@ function showDifficultySelect() {
   gameState.event = null;
   gameState.reward = null;
   gameState.shop = null;
-  document.getElementById("difficultyPanel").hidden = false;
   document.getElementById("resultPanel").hidden = true;
   const choices = document.getElementById("difficultyChoices");
   choices.innerHTML = Object.keys(DIFFICULTIES).map(function (id) {
@@ -151,8 +202,9 @@ function showDifficultySelect() {
   choices.querySelectorAll("[data-difficulty]").forEach(function (button) {
     button.addEventListener("click", function () { resetGame(button.dataset.difficulty); });
   });
-  choices.hidden = !gameState.buildId;
   renderBuildChoices();
+  document.getElementById("difficultyContinueButton").disabled = !gameState.buildId;
+  showGameScreen("setupScreen");
   renderAll();
 }
 
@@ -170,7 +222,8 @@ function renderBuildChoices() {
     button.addEventListener("click", function () {
       gameState.buildId = button.dataset.build;
       renderBuildChoices();
-      document.getElementById("difficultyChoices").hidden = false;
+      document.getElementById("difficultyContinueButton").disabled = false;
+      document.getElementById("buildSelectionHint").textContent = "" + BUILD_LIBRARY[gameState.buildId].name + " 전법을 익힙니다.";
     });
   });
 }
@@ -328,10 +381,13 @@ function selectNode(nodeId) {
 
   if (node.type === "battle" || node.type === "elite" || node.type === "boss") {
     startCombat(node);
+    showGameScreen("combatScreen");
   } else if (node.type === "shop") {
     openShop();
+    showGameScreen("shopScreen");
   } else {
     openEvent();
+    showGameScreen("eventScreen");
   }
   renderAll();
   requestNodeStory("entry");
@@ -418,6 +474,7 @@ function applyReward(rewardType, cardType) {
     document.getElementById("nodeHint").textContent = CARD_LIBRARY[cardType].name + " 전법을 " + CARD_LIBRARY[replacement].name + " 전법으로 바꿨습니다.";
   }
   gameState.reward = null;
+  showGameScreen("mapScreen");
   renderAll();
 }
 
@@ -471,6 +528,7 @@ function upgradeCard(cardType) {
 function finishEvent(message) {
   gameState.event = null;
   completeNode(message);
+  showGameScreen("mapScreen");
   renderAll();
 }
 
@@ -513,6 +571,7 @@ function chooseShop(choice) {
   if (choice === "leave") {
     gameState.shop = null;
     completeNode("상점을 나왔습니다.");
+    showGameScreen("mapScreen");
     renderAll();
     return;
   }
@@ -561,6 +620,7 @@ function buyUpgrade(cardType) {
   gameState.gold -= shopPrice("upgrade");
   gameState.shop.purchased.upgrade = true;
   document.getElementById("shopMessage").textContent = CARD_LIBRARY[cardType].name + " 전법을 강화했습니다.";
+  renderShop();
   renderAll();
 }
 
@@ -635,7 +695,7 @@ function renderHand() {
   hand.innerHTML = gameState.hand.map(function (card) {
     const base = CARD_LIBRARY[card.id];
     const selected = gameState.selectedCards.includes(card.uid) ? " selected" : "";
-    return '<button class="play-card ' + base.type + selected + '" data-card-id="' + card.uid + '" type="button" draggable="true" aria-label="' + base.name + " " + card.rank + "등급 카드. 드래그해 합성" + '" title="카드를 끌어 같은 카드 위에 놓아 합성">' +
+    return '<button class="play-card ' + base.type + selected + '" data-card-id="' + card.uid + '" type="button" draggable="true" aria-label="' + base.name + " " + card.rank + "등급. " + base.description + " " + getCardValue(card) + (card.id === "heal" ? " 회복" : card.id === "shield" ? " 방어" : " 피해") + '" title="' + base.description + ' 같은 카드끼리 끌어 합성할 수 있습니다">' +
       '<span class="card-rank">' + card.rank + "등급</span>" +
       '<strong><span class="card-icon" aria-hidden="true">' + base.icon + '</span> ' + base.name + "</strong>" +
       '<span>' + getCardValue(card) + (card.id === "heal" ? " 회복" : card.id === "shield" ? " 방어" : " 피해") + "</span>" +
@@ -852,6 +912,7 @@ function checkCombatEnd() {
   else {
     gameState.reward = { open: true };
     document.getElementById("nodeHint").textContent = "전투 보상을 선택하세요.";
+    showGameScreen("rewardScreen");
   }
 }
 
@@ -918,6 +979,7 @@ function endRun(won, message) {
   }
   document.getElementById("resultPanel").hidden = false;
   gameState.combat = null;
+  showGameScreen("resultScreen");
   renderStats();
   requestNodeStory("run-ended", message);
 }
@@ -1096,4 +1158,13 @@ document.addEventListener("DOMContentLoaded", function () {
   document.getElementById("aiButton").addEventListener("click", requestArchiveNote);
   document.getElementById("pathAssistButton").addEventListener("click", requestPathAdvice);
   document.getElementById("combatAssistButton").addEventListener("click", requestCombatAdvice);
+  document.getElementById("recordsButton").addEventListener("click", openRecords);
+  document.getElementById("recordsBackButton").addEventListener("click", closeRecords);
+  document.getElementById("difficultyContinueButton").addEventListener("click", function () {
+    if (!gameState.buildId) return;
+    showGameScreen("difficultyScreen");
+  });
+  document.getElementById("difficultyBackButton").addEventListener("click", function () {
+    showGameScreen("setupScreen");
+  });
 });

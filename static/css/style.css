@@ -359,3 +359,123 @@ li .when {
   .result-scoreboard { grid-template-columns: 1fr; }
   .result-scoreboard > p { grid-column: 1; }
 }
+
+/* ---------- 고정 화면형 모험 UI ---------- */
+.game-page { height: 100dvh; overflow: hidden; padding-bottom: 0; }
+.game-page > #nav { min-height: 48px; height: 48px; margin: 0; padding: 7px 18px; flex-wrap: nowrap; }
+.game-page > #nav .menu { gap: 14px; }
+.game-page > #nav a, .game-page > #nav button { font-size: 12px; }
+.game-page > #nav .me { white-space: nowrap; }
+.game-page .game-main { width: 100%; max-width: none; height: calc(100dvh - 48px); min-height: 0; margin: 0; padding: 10px 18px 14px; display: flex; flex-direction: column; overflow: hidden; }
+.game-page .game-heading { flex: 0 0 auto; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px 18px; margin-bottom: 10px; }
+.game-page .game-heading h1 { font-size: 25px; }
+.game-page .game-heading > div:first-child > .muted { margin: 0; font-size: 11px; }
+.game-page .floor-progress { min-width: 132px; padding: 8px 11px; }
+.game-page .floor-progress strong { font-size: 25px; }
+.game-page .floor-dots { margin-top: 6px; }
+.game-page .run-stats { grid-column: 1 / -1; grid-template-columns: repeat(4, minmax(90px, .75fr)) minmax(230px, 1.7fr); gap: 7px; }
+.game-page .stat-chip { padding: 7px 10px; }
+.game-page .stat-chip > span { margin-bottom: 2px; font-size: 9px; }
+.game-page .stat-chip > strong { font-size: 13px; }
+.game-page .rank-summary { padding: 6px 10px; }
+.game-page .rank-line { font-size: 10px; }
+.game-page .rank-meter { margin: 4px 0 2px; }
+.game-page .rank-summary small { font-size: 9px; }
+.records-button { min-height: 36px; white-space: nowrap; }
+.game-page .game-layout { flex: 1 1 auto; min-height: 0; grid-template-columns: minmax(0, 1fr) 230px; gap: 12px; }
+.game-screen-stack { min-width: 0; min-height: 0; height: 100%; }
+.game-screen { display: none; width: 100%; height: 100%; min-height: 0; }
+.game-screen.active { display: block; }
+.game-page .game-panel { height: 100%; min-height: 0; margin: 0; padding: 16px; overflow: hidden; }
+.game-page .panel-title { margin-bottom: 10px; }
+.game-page .map-panel { display: flex; flex-direction: column; }
+.game-page .map-nodes { flex: 1 1 auto; min-height: 0; margin-top: 4px; overflow: hidden; }
+.game-page .map-floor { height: 100%; align-content: space-between; gap: 5px; }
+.game-page .map-stage { grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+.game-page .map-node { min-height: 0; height: clamp(43px, 6.6vh, 60px); padding: 5px 9px; }
+.game-page .map-options { gap: 7px; }
+.game-page .combat-panel { display: flex; flex-direction: column; }
+.game-page .battlefield { flex: 0 0 auto; min-height: 114px; margin: 6px 0; padding: 9px 12px; }
+.game-page .combatant-portrait { flex-basis: 68px; height: 78px; }
+.game-page .enemy-action-status { margin-top: 4px; padding-top: 4px; }
+.game-page .enemy-action-status strong { font-size: 10px; }
+.game-page .combat-log { flex: 0 0 auto; min-height: 32px; margin: 5px 0; padding: 7px 10px; font-size: 11px; }
+.game-page .hand-heading { flex: 0 0 auto; margin-top: 4px; }
+.game-page .card-hand { flex: 1 1 auto; min-height: 0; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; margin: 6px 0 8px; overflow: hidden; }
+.game-page .play-card { min-height: 0; height: 100%; max-height: 145px; padding: 8px 6px; gap: 4px; }
+.game-page .play-card strong { font-size: 12px; }
+.game-page .play-card small { font-size: 9px; line-height: 1.25; }
+.game-page .play-card span { font-size: 10px; }
+.game-page .play-card .card-icon { font-size: 14px; }
+.game-page .combat-actions { flex: 0 0 auto; }
+.game-page .event-panel, .game-page .reward-panel, .game-page .shop-panel, .game-page .result-panel { display: flex; flex-direction: column; justify-content: center; }
+.game-page .event-choices, .game-page .shop-choices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.game-page .relic-panel { display: flex; flex-direction: column; }
+.game-page .relic-list { min-height: 50px; overflow: auto; }
+.game-page .ai-note { margin-top: auto; padding-top: 12px; }
+.game-page .ai-note p:not(.eyebrow) { min-height: 42px; margin: 7px 0; font-size: 11px; }
+.game-page .difficulty-panel { display: flex; flex-direction: column; justify-content: center; }
+.game-page .build-choices { flex: 0 1 auto; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.game-page .build-choice { min-height: 155px; }
+.screen-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; }
+.primary-button { min-height: 40px; padding: 9px 16px; border: 1px solid var(--main); border-radius: 7px; background: var(--main); color: #fff; font-weight: 750; }
+.primary-button:hover:not(:disabled) { background: #4f46e5; }
+.primary-button:disabled { opacity: .45; cursor: not-allowed; }
+.difficulty-screen-panel { justify-content: flex-start !important; }
+.difficulty-screen-panel .difficulty-choices { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-top: 20px; }
+.difficulty-screen-panel .difficulty-choice { min-height: 130px; }
+.records-panel { display: flex; flex-direction: column; }
+.records-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.records-heading h2 { margin: 0; }
+.records-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.records-summary > div { padding: 8px 10px; border: 1px solid #e4e4e7; border-radius: 7px; background: #fafaff; }
+.records-summary span, .records-summary strong { display: block; }
+.records-summary span { color: var(--gray); font-size: 10px; }
+.records-summary strong { margin-top: 3px; font-size: 13px; }
+.game-history-list { flex: 1 1 auto; min-height: 0; overflow: auto; }
+.game-history-item { display: grid; gap: 4px; margin: 0 0 7px; padding: 9px 11px; border-left: 3px solid var(--line); border-radius: 6px; background: #fff; font-size: 11px; }
+.game-history-item.won { border-left-color: #3a8b62; }
+.game-history-item.lost { border-left-color: #c2413b; }
+.game-history-title { display: flex; justify-content: space-between; gap: 8px; }
+.game-history-title time, .game-history-item small { color: var(--gray); font-size: 10px; }
+.game-page[data-game-screen="recordsScreen"] .game-layout { grid-template-columns: minmax(0, 1fr); }
+.game-page[data-game-screen="recordsScreen"] #adventureSidebar { display: none; }
+
+@media (max-height: 760px) and (min-width: 761px) {
+  .game-page .game-main { padding-top: 6px; padding-bottom: 8px; }
+  .game-page .game-heading { margin-bottom: 6px; }
+  .game-page .game-heading > div:first-child > .muted { display: none; }
+  .game-page .stat-chip { padding: 5px 8px; }
+  .game-page .game-panel { padding: 11px; }
+  .game-page .battlefield { min-height: 95px; }
+  .game-page .combatant-portrait { flex-basis: 56px; height: 64px; }
+  .game-page .play-card small { display: none; }
+  .game-page .play-card { align-items: center; justify-content: center; }
+  .game-page .game-layout { grid-template-columns: minmax(0, 1fr) 205px; }
+}
+
+@media (max-width: 760px) {
+  .game-page { height: auto; min-height: 100dvh; overflow: auto; }
+  .game-page > #nav { height: auto; min-height: 48px; }
+  .game-page .game-main { height: auto; min-height: calc(100dvh - 48px); overflow: visible; }
+  .game-page .game-layout { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .game-screen-stack, .game-screen { min-height: 450px; height: auto; }
+  .game-page .game-panel { height: auto; min-height: 450px; overflow: visible; }
+  .game-page .run-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .game-page .rank-summary { grid-column: 1 / -1; }
+  .game-page .map-nodes { overflow: auto; }
+  .game-page .map-floor { height: auto; }
+  .game-page .map-node { height: auto; min-height: 54px; }
+  .game-page .combat-panel { min-height: 650px; }
+  .game-page .card-hand { flex: 0 0 auto; grid-template-columns: repeat(4, minmax(0, 1fr)); overflow: visible; }
+  .game-page .play-card { min-height: 110px; height: auto; }
+  .game-page .event-choices, .game-page .shop-choices { grid-template-columns: 1fr; }
+  .game-page .build-choices { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .game-page .difficulty-screen-panel .difficulty-choices { grid-template-columns: 1fr; }
+  .screen-footer { align-items: stretch; flex-direction: column; }
+  .game-page .relic-panel { min-height: 0; }
+  .game-page .ai-note { margin-top: 18px; }
+  .game-page .event-panel, .game-page .reward-panel, .game-page .shop-panel, .game-page .result-panel { min-height: 450px; }
+  .records-panel { min-height: 650px !important; }
+  .records-summary { grid-template-columns: 1fr; }
+}
