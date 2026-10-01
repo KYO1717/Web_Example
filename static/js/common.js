@@ -40,14 +40,49 @@ function renderNav() {
     return '<a href="' + m.url + '"' + (isHere ? ' class="on"' : "") + ">" + m.name + "</a>";
   }).join("");
 
+  const supportButton = '<button class="support-button" type="button" onclick="openSupportModal()">💛 후원하기</button>';
   const me = currentUser
-    ? "<span>" + currentUser.email + "</span>" +
+    ? supportButton + "<span>" + currentUser.email + "</span>" +
       ' <button onclick="signOut()">로그아웃</button>'
-    : '<a href="/index.html">로그인</a>';
+    : supportButton + '<a href="/index.html">로그인</a>';
 
   nav.innerHTML = '<div class="menu">' + links + "</div>" +
                   '<div class="me">' + me + "</div>";
 }
+
+function openSupportModal() {
+  let modal = document.getElementById("supportModal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "supportModal";
+    modal.className = "support-modal-backdrop";
+    modal.innerHTML = '<section class="support-modal" role="dialog" aria-modal="true" aria-labelledby="supportTitle">' +
+      '<button class="support-close" type="button" aria-label="후원 창 닫기" onclick="closeSupportModal()">×</button>' +
+      '<p class="eyebrow">SUPPORT THE ADVENTURE</p>' +
+      '<h2 id="supportTitle">💛 후원하기</h2>' +
+      '<p>기록자의 모험을 응원해 주셔서 감사합니다.</p>' +
+      '<div class="support-account"><span>토스</span><strong>1908-5150-0168</strong></div>' +
+      '<p class="support-note">계좌번호를 확인한 뒤 후원해 주세요.</p>' +
+      '</section>';
+    modal.addEventListener("click", function (event) {
+      if (event.target === modal) closeSupportModal();
+    });
+    document.body.appendChild(modal);
+  }
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+  modal.querySelector(".support-close").focus();
+}
+
+function closeSupportModal() {
+  const modal = document.getElementById("supportModal");
+  if (modal) modal.hidden = true;
+  document.body.classList.remove("modal-open");
+}
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape") closeSupportModal();
+});
 
 // ---------------------------------------------------------
 // 3. 로그인 / 회원가입

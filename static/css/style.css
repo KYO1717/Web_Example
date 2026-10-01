@@ -46,6 +46,21 @@ header a {
 header a.on { color: var(--main); font-weight: 600; }
 
 header .me { font-size: 13px; color: var(--gray); }
+.support-button { margin-right: 8px; padding: 6px 9px; border-color: #f0c96a; background: #fffaf0; color: #8a6215; font-size: 12px; font-weight: 750; }
+.support-button:hover { background: #fff2cc; }
+.modal-open { overflow: hidden; }
+.support-modal-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 20px; background: rgba(24, 24, 27, .42); }
+.support-modal-backdrop[hidden] { display: none; }
+.support-modal { position: relative; width: min(360px, 100%); padding: 28px; border: 1px solid #ead9a8; border-radius: 14px; background: #fffdf6; box-shadow: 0 20px 60px rgba(24, 24, 27, .2); text-align: center; }
+.support-modal h2 { margin: 0 0 10px; }
+.support-modal > p:not(.eyebrow):not(.support-note) { margin: 0 0 18px; color: var(--gray); font-size: 13px; }
+.support-close { position: absolute; top: 9px; right: 11px; width: 30px; height: 30px; padding: 0; border: 0; background: transparent; color: var(--gray); font-size: 24px; line-height: 1; }
+.support-close:hover { background: #fff2cc; color: var(--text); }
+.support-account { padding: 15px; border: 1px solid #ead9a8; border-radius: 8px; background: #fff; }
+.support-account span, .support-account strong { display: block; }
+.support-account span { color: #8a6215; font-size: 12px; font-weight: 750; }
+.support-account strong { margin-top: 6px; color: var(--text); font-size: 20px; letter-spacing: .5px; }
+.support-note { margin: 12px 0 0; color: var(--gray); font-size: 11px; }
 
 /* ---------- 본문 ---------- */
 

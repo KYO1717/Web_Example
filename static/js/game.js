@@ -78,9 +78,13 @@ const RELIC_LIBRARY = {
   starMap: { name: "왕실 보급 인장", icon: "🪙", description: "전투 승리 시 금화 +5" },
   compass: { name: "마력 증폭 수정", icon: "🔮", description: "모든 카드 효과 +1" },
   archiveKey: { name: "상인의 황금 열쇠", icon: "🗝️", description: "전투 시작 시 금화 5개를 얻습니다." },
+  swiftBoots: { name: "바람깃 장화", icon: "👢", description: "전투 첫 차례 행동 횟수 +1" },
+  healingHerb: { name: "달빛 약초", icon: "🌿", description: "전투 승리 후 생명력 3 회복" },
+  thornCrown: { name: "가시 왕관", icon: "🌹", description: "피격 시 몬스터에게 1 반사 피해" },
   inkStain: { name: "저주받은 흑요석", icon: "☠️", description: "전투 시작 시 생명력 3 감소 (저주)" },
   crackedSeal: { name: "부서진 방패", icon: "🛡️", description: "몬스터 공격력 +2 (저주)" },
   missingPage: { name: "봉인된 족쇄", icon: "⛓️", description: "전투 첫 차례 행동 횟수 -1 (저주)" },
+  greedyMimic: { name: "탐욕스러운 보물상자", icon: "🧰", description: "상점 상품 가격 +10 (저주)" },
 };
 
 const gameState = {
@@ -251,7 +255,9 @@ function createMap() {
   for (let floor = 1; floor <= 3; floor += 1) {
     const nodes = [];
     floorOptions[floor - 1].forEach(function (pair, branch) {
-      pair.forEach(function (type, option) {
+      const pairTypes = pair.slice();
+      if (Math.random() < .5) pairTypes.reverse();
+      pairTypes.forEach(function (type, option) {
         const index = branch * 2 + option;
         nodes.push({
           id: floor + "-" + index,
@@ -551,10 +557,13 @@ function renderShop() {
     return;
   }
   panel.hidden = false;
+  const upgradePrice = shopPrice("upgrade");
+  const maxHpPrice = shopPrice("max-hp");
+  const relicPrice = shopPrice("relic");
   choices.innerHTML =
-    '<button class="shop-item" data-shop-choice="upgrade" type="button"><strong>⚒️ 전법 연마 · 🪙 25</strong><span>카드 한 장을 한 등급 강화합니다.</span></button>' +
-    '<button class="shop-item" data-shop-choice="max-hp" type="button"><strong>❤️ 생명력 증폭 · 🪙 30</strong><span>최대 생명력 +5, 생명력도 회복합니다.</span></button>' +
-    '<button class="shop-item" data-shop-choice="relic" type="button"><strong>🔮 마력 증폭 수정 · 🪙 20</strong><span>모든 카드 효과가 강해지는 유물입니다.</span></button>' +
+    '<button class="shop-item" data-shop-choice="upgrade" type="button"><strong>⚒️ 전법 연마 · 🪙 ' + upgradePrice + '</strong><span>카드 한 장을 한 등급 강화합니다.</span></button>' +
+    '<button class="shop-item" data-shop-choice="max-hp" type="button"><strong>❤️ 생명력 증폭 · 🪙 ' + maxHpPrice + '</strong><span>최대 생명력 +5, 생명력도 회복합니다.</span></button>' +
+    '<button class="shop-item" data-shop-choice="relic" type="button"><strong>🔮 마력 증폭 수정 · 🪙 ' + relicPrice + '</strong><span>모든 카드 효과가 강해지는 유물입니다.</span></button>' +
     '<button class="shop-leave" data-shop-choice="leave" type="button">길을 떠난다</button>';
   choices.querySelectorAll("[data-shop-choice]").forEach(function (button) {
     const choice = button.dataset.shopChoice;
@@ -565,7 +574,8 @@ function renderShop() {
 }
 
 function shopPrice(choice) {
-  return choice === "upgrade" ? 25 : choice === "max-hp" ? 30 : 20;
+  const basePrice = choice === "upgrade" ? 25 : choice === "max-hp" ? 30 : 20;
+  return basePrice + (hasRelic("greedyMimic") ? 10 : 0);
 }
 
 function canBuyShopItem(choice) {
@@ -606,7 +616,7 @@ function showShopUpgradeChoices() {
     if (card.rank >= 3 || candidates.some(function (item) { return item.id === card.id; })) return;
     candidates.push(card);
   });
-  choices.innerHTML = '<p class="event-subtitle">🪙 25개로 강화할 전법을 선택하세요.</p>' + candidates.map(function (card) {
+  choices.innerHTML = '<p class="event-subtitle">🪙 ' + shopPrice("upgrade") + '개로 강화할 전법을 선택하세요.</p>' + candidates.map(function (card) {
     const base = CARD_LIBRARY[card.id];
     return '<button class="shop-item" data-shop-card="' + card.id + '" type="button"><strong>' + base.icon + " " + base.name + " " + card.rank + "등급</strong><span>" + (card.rank + 1) + "등급으로 강화</span></button>";
   }).join("") + '<button class="shop-leave" data-shop-choice="back" type="button">상품 목록으로</button>';
@@ -664,7 +674,7 @@ function startCombat(node) {
     block: 0,
     damageOverTime: 0,
     damageOverTimeTurns: 0,
-    actionsRemaining: hasRelic("missingPage") ? 1 : 2,
+    actionsRemaining: Math.max(1, 2 + (hasRelic("swiftBoots") ? 1 : 0) - (hasRelic("missingPage") ? 1 : 0)),
     lastEnemyAction: "아직 움직이지 않았습니다.",
     enemyBlock: 0,
     enemyIntent: "attack",
@@ -926,9 +936,17 @@ async function enemyTurn(playerAction) {
     damage = Math.max(0, (gameState.combat.enemyDamage + curseBonus - poisonReduction) * multiplier - gameState.combat.block - (build.damageReduction || 0));
     gameState.hp -= damage;
     gameState.combat.lastEnemyAction = intent === "charge" ? "강력한 일격으로 " + damage + " 피해를 입혔습니다." : "공격해 " + damage + " 피해를 입혔습니다.";
+    if (damage > 0 && hasRelic("thornCrown")) {
+      gameState.combat.enemyHp -= 1;
+      gameState.combat.lastEnemyAction += " 가시 왕관이 1 반사 피해를 줬습니다.";
+    }
   }
   gameState.combat.block = 0;
   if (damageOverTimeMessage) gameState.combat.lastEnemyAction += damageOverTimeMessage;
+  if (gameState.combat.enemyHp <= 0) {
+    checkCombatEnd();
+    return;
+  }
   gameState.selectedCards = [];
   if (gameState.hp <= 0) {
     endRun(false, "생명력을 모두 잃었습니다. 이번 모험은 여기서 끝납니다.");
@@ -937,7 +955,7 @@ async function enemyTurn(playerAction) {
   maintainHand();
   gameState.combat.enemyTurnCount += 1;
   gameState.combat.enemyIntent = ["attack", "block", "charge"][gameState.combat.enemyTurnCount % 3];
-  gameState.combat.actionsRemaining = hasRelic("missingPage") ? 1 : 2;
+  gameState.combat.actionsRemaining = Math.max(1, 2 - (hasRelic("missingPage") ? 1 : 0));
   gameState.combat.turn = "player";
   document.getElementById("combatLog").textContent = playerAction + damageOverTimeMessage + " 몬스터에게 " + damage + " 피해를 받았습니다. 기록자 차례입니다.";
   renderAll();
@@ -951,6 +969,7 @@ function checkCombatEnd() {
     (gameState.relics.some(function (relic) { return relic.id === "starMap"; }) ? 5 : 0);
   const defeatedEnemy = gameState.combat.enemyName;
   gameState.gold += reward;
+  if (hasRelic("healingHerb")) gameState.hp = Math.min(gameState.maxHp, gameState.hp + 3);
   gameState.combat = null;
   const finalBoss = node.type === "boss" && node.floor === 3;
   completeNode((finalBoss ? "던전의 지배자를 물리쳤습니다." : node.type === "boss" ? "층의 수호자를 물리쳤습니다." : "몬스터를 물리쳤습니다.") + " 🪙 금화 " + reward + "개를 얻었습니다.");
@@ -1092,15 +1111,15 @@ function getEventRelic() {
   const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
   const floorProgress = Math.min(1, Math.max(0, (gameState.floor - 1) / 2));
   const curseChance = difficulty.curseChance * (.25 + floorProgress * .75);
-  const cursed = ["inkStain", "crackedSeal", "missingPage"];
-  const helpful = ["starMap", "compass", "archiveKey"];
+  const cursed = ["inkStain", "crackedSeal", "missingPage", "greedyMimic"];
+  const helpful = ["starMap", "compass", "archiveKey", "swiftBoots", "healingHerb", "thornCrown"];
   const pool = Math.random() < curseChance ? cursed : helpful;
   const available = pool.filter(function (id) { return !hasRelic(id); });
   return available.length ? available[Math.floor(Math.random() * available.length)] : pool[Math.floor(Math.random() * pool.length)];
 }
 
 function getRewardRelic() {
-  const helpful = ["starMap", "compass", "archiveKey"];
+  const helpful = ["starMap", "compass", "archiveKey", "swiftBoots", "healingHerb", "thornCrown"];
   const available = helpful.filter(function (id) { return !hasRelic(id); });
   return available.length ? available[Math.floor(Math.random() * available.length)] : null;
 }
