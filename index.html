@@ -19,17 +19,10 @@
       <a class="tutorial-quick-link" href="/pages/tutorial.html">📖 처음이신가요? 상세 튜토리얼 보기 <span>→</span></a>
     </section>
 
-    <!-- 로그인 안 했을 때 -->
+    <!-- Google 로그인 전 -->
     <section id="loginBox" class="card" hidden>
-      <input id="email" type="email" placeholder="이메일">
-      <input id="password" type="password" placeholder="비밀번호 (6자 이상)">
-      <div class="row">
-        <button onclick="signUp()">회원가입</button>
-        <button onclick="signIn()">로그인</button> 
-      </div>
-      <div class="login-divider">또는</div>
       <button class="google-login" onclick="signInWithGoogle()">
-        Google 계정으로 로그인
+        🔐 Google 계정으로 시작하기
       </button>
     </section>
 
@@ -44,7 +37,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/static/js/common.js?v=3"></script>
+  <script src="/static/js/common.js?v=4"></script>
   <script src="/static/js/home.js"></script>
 
 </body>

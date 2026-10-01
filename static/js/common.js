@@ -85,34 +85,8 @@ document.addEventListener("keydown", function (event) {
 });
 
 // ---------------------------------------------------------
-// 3. 로그인 / 회원가입
+// 3. Google 로그인
 // ---------------------------------------------------------
-
-async function signUp() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const { error } = await db.auth.signUp({ email, password });
-
-  if (error) {
-    console.error("가입 실패:", error);
-    alert("가입 실패: " + error.message);
-    return;
-  }
-  alert("가입 완료! 바로 로그인됩니다.");
-}
-
-async function signIn() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  const { error } = await db.auth.signInWithPassword({ email, password });
-
-  if (error) {
-    console.error("로그인 실패:", error);
-    alert("로그인 실패: " + error.message);
-  }
-}
 
 async function signInWithGoogle() {
   if (window.location.protocol === "file:") {
