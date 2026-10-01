@@ -18,31 +18,39 @@ const NODE_ICONS = { battle: "⚔️", event: "❔", shop: "🧙", elite: "💀"
 const BUILD_LIBRARY = {
   balanced: {
     name: "모험가",
-    description: "공격·독·치유·방패를 고루 익힌 안정적인 초심자용 전법입니다.",
-    passive: "고른 카드 구성",
+    description: "모든 전법을 고르게 익히고, 조금 더 많은 생명력과 금화로 시작합니다.",
+    passive: "최대 생명력 +2 · 시작 금화 +5",
+    maxHpBonus: 2,
+    startGold: 5,
     cards: { strike: 8, bleed: 8, heal: 8, shield: 8 },
   },
   assault: {
     name: "검투사",
-    description: "강타 피해 +2. 공격 카드가 많아 몬스터를 빠르게 쓰러뜨립니다.",
-    passive: "강타 피해 +2",
+    description: "공격 카드가 많고 약해진 몬스터에게 치명적인 마무리 일격을 가합니다.",
+    passive: "강타 피해 +2 · 50% 이하 적 추가 피해 +3",
     strikeBonus: 2,
+    executeBonus: 3,
+    startGold: 8,
     cards: { strike: 14, bleed: 8, heal: 5, shield: 5 },
   },
   attrition: {
     name: "독술사",
-    description: "맹독 피해 +1, 지속 시간 +1턴. 독을 쌓아 강적을 약화시킵니다.",
-    passive: "맹독 피해 +1 · 지속 +1턴",
+    description: "독을 오래 유지하고, 중독된 몬스터의 공격력을 낮춥니다.",
+    passive: "맹독 피해 +1 · 지속 +1턴 · 중독 적 공격력 -1",
     bleedBonus: 1,
     bleedTurnsBonus: 1,
+    poisonEnemyDamageReduction: 1,
+    synergyBonus: 5,
     cards: { strike: 6, bleed: 14, heal: 6, shield: 6 },
   },
   guardian: {
     name: "성기사",
-    description: "방패술과 치유 효과 +2. 방어와 회복으로 긴 싸움에 강합니다.",
-    passive: "방패술·치유 효과 +2",
+    description: "높은 생명력과 방어로 긴 싸움을 버티며 받는 피해를 줄입니다.",
+    passive: "최대 생명력 +7 · 방패술·치유 +2 · 받는 피해 -1",
     shieldBonus: 2,
     healBonus: 2,
+    maxHpBonus: 7,
+    damageReduction: 1,
     cards: { strike: 6, bleed: 4, heal: 11, shield: 11 },
   },
 };
@@ -63,7 +71,7 @@ const DIFFICULTIES = {
   2: { name: "II · 잊힌 폐허", description: "몬스터의 체력과 공격력이 조금 높아집니다.", enemyHp: 1.2, enemyDamage: 1.15, reward: 1.15, curseChance: 0, scoreMultiplier: 1.25, combatRecovery: .9 },
   3: { name: "III · 저주받은 지하묘지", description: "강한 몬스터와 저주받은 유물이 등장합니다.", enemyHp: 1.4, enemyDamage: 1.3, reward: 1.3, curseChance: .5, scoreMultiplier: 1.5, combatRecovery: .8 },
   4: { name: "IV · 슬라임 왕의 둥지", description: "정예 왕관 슬라임과 저주가 모험을 압박합니다.", enemyHp: 1.7, enemyDamage: 1.5, reward: 1.5, curseChance: .75, scoreMultiplier: 1.8, combatRecovery: .7 },
-  5: { name: "V · 왕관 슬라임의 성채", description: "몬스터가 크게 강화되고 저주가 반드시 등장합니다. 전투 사이 회복도 제한됩니다.", enemyHp: 2.15, enemyDamage: 1.85, reward: 1.8, curseChance: 1, scoreMultiplier: 2.2, combatRecovery: .55 },
+  5: { name: "V · 왕관 슬라임의 성채", description: "층이 깊어질수록 몬스터가 크게 강화되고 저주가 반드시 등장합니다.", enemyHp: 2.15, enemyDamage: 1.85, reward: 1.8, curseChance: 1, scoreMultiplier: 2.2, combatRecovery: .55 },
 };
 
 const RELIC_LIBRARY = {
@@ -94,6 +102,8 @@ const gameState = {
   difficulty: null,
   buildId: null,
   runScore: 0,
+  combatAttackBonus: 0,
+  combatsStarted: 0,
   runEnded: false,
 };
 
@@ -159,11 +169,14 @@ function resetGame(difficultyId) {
   const difficulty = DIFFICULTIES[difficultyId] || DIFFICULTIES[1];
   gameState.difficulty = Number(difficultyId) || 1;
   gameState.floor = 1;
-  gameState.hp = 30;
-  gameState.maxHp = 30;
-  gameState.gold = 0;
-  gameState.runScore = 0;
   gameState.buildId = BUILD_LIBRARY[gameState.buildId] ? gameState.buildId : "balanced";
+  const build = BUILD_LIBRARY[gameState.buildId] || BUILD_LIBRARY.balanced;
+  gameState.maxHp = 30 + (build.maxHpBonus || 0);
+  gameState.hp = gameState.maxHp;
+  gameState.gold = build.startGold || 0;
+  gameState.runScore = 0;
+  gameState.combatAttackBonus = 0;
+  gameState.combatsStarted = 0;
   gameState.map = createMap();
   gameState.currentNode = null;
   gameState.cardPool = [];
@@ -428,9 +441,11 @@ function renderReward() {
     return;
   }
   panel.hidden = false;
+  const rewardRelic = gameState.reward.relicId;
+  const blessingMaxed = gameState.combatAttackBonus >= 3;
   choices.innerHTML =
-    '<button class="event-choice" data-reward-choice="upgrade" type="button"><strong>✨ 마법 각인</strong><span>선택한 카드 종류를 한 등급 강화합니다.</span></button>' +
-    '<button class="event-choice" data-reward-choice="replace" type="button"><strong>🃏 전법 재정비</strong><span>덱의 카드 한 종류를 다른 전법으로 바꿉니다.</span></button>';
+    '<button class="event-choice" data-reward-choice="attack-blessing" type="button" ' + (blessingMaxed ? "disabled" : "") + '><strong>⚔️ 전투의 축복</strong><span>' + (blessingMaxed ? "축복이 최대치(+3)에 도달했습니다." : "이번 모험 동안 직접 공격 피해가 +1 증가합니다. 현재 +" + gameState.combatAttackBonus + ".") + '</span></button>' +
+    '<button class="event-choice" data-reward-choice="relic" type="button" ' + (rewardRelic ? "" : "disabled") + '><strong>🔮 유물 보급</strong><span>' + (rewardRelic ? RELIC_LIBRARY[rewardRelic].icon + " " + RELIC_LIBRARY[rewardRelic].name + "을(를) 무작위로 얻습니다." : "얻을 수 있는 새 유물이 없습니다.") + '</span></button>';
   choices.querySelectorAll("[data-reward-choice]").forEach(function (button) {
     button.addEventListener("click", function () { chooseReward(button.dataset.rewardChoice); });
   });
@@ -438,49 +453,24 @@ function renderReward() {
 
 function chooseReward(choice) {
   if (!gameState.reward) return;
-  if (choice === "upgrade") {
-    showRewardCardChoices("upgrade");
+  if (choice === "attack-blessing") {
+    if (gameState.combatAttackBonus >= 3) return;
+    gameState.combatAttackBonus += 1;
+    gameState.reward = null;
+    document.getElementById("nodeHint").textContent = "⚔️ 전투의 축복을 얻었습니다. 직접 공격 피해 +1";
+    showGameScreen("mapScreen");
+    renderAll();
     return;
   }
-  showRewardCardChoices("replace");
-}
-
-function showRewardCardChoices(rewardType) {
-  const choices = document.getElementById("rewardChoices");
-  const available = [];
-  gameState.cardPool.forEach(function (card) {
-    if (available.some(function (item) { return item.id === card.id; })) return;
-    available.push(card);
-  });
-  choices.innerHTML = '<p class="event-subtitle">강화하거나 바꿀 전법을 선택하세요.</p>' + available.map(function (card) {
-    const base = CARD_LIBRARY[card.id];
-    return '<button class="event-choice card-upgrade-choice" data-reward-card="' + card.id + '" type="button"><strong>' + base.icon + " " + base.name + "</strong><span>" + (rewardType === "upgrade" ? "모든 " + base.name + " 카드를 강화" : base.name + " 카드를 다른 전법으로 교체") + "</span></button>";
-  }).join("");
-  choices.querySelectorAll("[data-reward-card]").forEach(function (button) {
-    button.addEventListener("click", function () { applyReward(rewardType, button.dataset.rewardCard); });
-  });
-}
-
-function applyReward(rewardType, cardType) {
-  if (!gameState.reward) return;
-  if (rewardType === "upgrade") {
-    gameState.cardPool.forEach(function (card) {
-      if (card.id === cardType && card.rank < 3) card.rank += 1;
-    });
-    document.getElementById("nodeHint").textContent = CARD_LIBRARY[cardType].name + " 전법이 강화되었습니다.";
-  } else {
-    const replacement = Object.keys(CARD_LIBRARY).find(function (id) { return id !== cardType; });
-    gameState.cardPool.forEach(function (card) {
-      if (card.id === cardType) {
-        card.id = replacement;
-        card.rank = 1;
-      }
-    });
-    document.getElementById("nodeHint").textContent = CARD_LIBRARY[cardType].name + " 전법을 " + CARD_LIBRARY[replacement].name + " 전법으로 바꿨습니다.";
+  if (choice === "relic") {
+    const relicId = gameState.reward.relicId;
+    if (!relicId) return;
+    addRelic(relicId);
+    gameState.reward = null;
+    document.getElementById("nodeHint").textContent = RELIC_LIBRARY[relicId].icon + " " + RELIC_LIBRARY[relicId].name + "을(를) 얻었습니다.";
+    showGameScreen("mapScreen");
+    renderAll();
   }
-  gameState.reward = null;
-  showGameScreen("mapScreen");
-  renderAll();
 }
 
 function chooseEvent(choice) {
@@ -640,11 +630,25 @@ function buyUpgrade(cardType) {
   renderAll();
 }
 
+function getCombatDifficulty(node) {
+  const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+  const floorProgress = Math.min(1, Math.max(0, ((node.floor || gameState.floor) - 1) / 2));
+  const ramp = .25 + floorProgress * .75;
+  return {
+    enemyHp: 1 + (difficulty.enemyHp - 1) * ramp,
+    enemyDamage: 1 + (difficulty.enemyDamage - 1) * ramp,
+    combatRecovery: 1 - (1 - difficulty.combatRecovery) * ramp,
+  };
+}
+
 function startCombat(node) {
   const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+  const combatDifficulty = getCombatDifficulty(node);
   const boss = node.type === "boss";
   const firstFloorBoss = boss && node.floor === 1;
-  gameState.hp = Math.min(gameState.maxHp, Math.max(1, Math.round(gameState.maxHp * difficulty.combatRecovery)));
+  const firstCombat = gameState.combatsStarted === 0;
+  gameState.hp = firstCombat ? gameState.maxHp : Math.min(gameState.maxHp, Math.max(1, Math.round(gameState.maxHp * combatDifficulty.combatRecovery)));
+  gameState.combatsStarted += 1;
   gameState.deck = gameState.cardPool.map(function (card) {
     return createCard(card.id, card.rank);
   });
@@ -654,9 +658,9 @@ function startCombat(node) {
   const baseDamage = firstFloorBoss ? 5 : boss ? 8 : node.type === "elite" ? 6 : 4;
   gameState.combat = {
     enemyName: boss ? (firstFloorBoss ? "왕관 슬라임 대왕" : "슬라임 왕국의 수호자") : node.type === "elite" ? "정예 왕관 슬라임" : "왕관 슬라임",
-    enemyHp: Math.round(baseHp * difficulty.enemyHp),
-    enemyMaxHp: Math.round(baseHp * difficulty.enemyHp),
-    enemyDamage: Math.round(baseDamage * difficulty.enemyDamage),
+    enemyHp: Math.round(baseHp * combatDifficulty.enemyHp),
+    enemyMaxHp: Math.round(baseHp * combatDifficulty.enemyHp),
+    enemyDamage: Math.round(baseDamage * combatDifficulty.enemyDamage),
     block: 0,
     damageOverTime: 0,
     damageOverTimeTurns: 0,
@@ -749,7 +753,7 @@ function getCardValue(card) {
   if (card.id === "shield") return 5 * card.rank + bonus + (build.shieldBonus || 0);
   if (card.id === "heal") return 6 * card.rank + bonus + (gameState.combat && gameState.combat.block > 0 ? 2 : 0) + (build.healBonus || 0);
   if (card.id === "bleed") return 3 * card.rank + bonus + (build.bleedBonus || 0);
-  return 7 * card.rank + bonus + (build.strikeBonus || 0);
+  return 7 * card.rank + bonus + (build.strikeBonus || 0) + (card.id === "strike" ? gameState.combatAttackBonus : 0);
 }
 
 function toggleCard(uid) {
@@ -856,11 +860,14 @@ function playSelectedCard() {
     gameState.combat.damageOverTimeTurns = 3 + (BUILD_LIBRARY[gameState.buildId].bleedTurnsBonus || 0);
     actionMessage = CARD_LIBRARY[card.id].name + "이(가) 매 차례 독 피해 " + value + "을 남깁니다.";
   } else {
-    const synergyBonus = gameState.combat.damageOverTimeTurns > 0 ? 3 : 0;
-    const dealt = Math.max(0, value + synergyBonus - gameState.combat.enemyBlock);
+    const build = BUILD_LIBRARY[gameState.buildId] || BUILD_LIBRARY.balanced;
+    const synergyBonus = gameState.combat.damageOverTimeTurns > 0 ? (build.synergyBonus || 3) : 0;
+    const executeBonus = gameState.combat.enemyHp <= gameState.combat.enemyMaxHp * .5 ? (build.executeBonus || 0) : 0;
+    const dealt = Math.max(0, value + synergyBonus + executeBonus - gameState.combat.enemyBlock);
     gameState.combat.enemyHp -= dealt;
     gameState.combat.enemyBlock = 0;
-    actionMessage = CARD_LIBRARY[card.id].name + "으로 " + dealt + " 피해를 입혔습니다." + (synergyBonus ? " 독 연계 추가 피해!" : "");
+    actionMessage = CARD_LIBRARY[card.id].name + "으로 " + dealt + " 피해를 입혔습니다." +
+      (synergyBonus ? " 독 연계 추가 피해!" : "") + (executeBonus ? " 검투사의 마무리 일격!" : "");
   }
   gameState.selectedCards = [];
   checkCombatEnd();
@@ -914,7 +921,9 @@ async function enemyTurn(playerAction) {
   } else {
     const multiplier = intent === "charge" ? 2 : 1;
     const curseBonus = hasRelic("crackedSeal") ? 2 : 0;
-    damage = Math.max(0, (gameState.combat.enemyDamage + curseBonus) * multiplier - gameState.combat.block);
+    const build = BUILD_LIBRARY[gameState.buildId] || BUILD_LIBRARY.balanced;
+    const poisonReduction = gameState.combat.damageOverTimeTurns > 0 ? (build.poisonEnemyDamageReduction || 0) : 0;
+    damage = Math.max(0, (gameState.combat.enemyDamage + curseBonus - poisonReduction) * multiplier - gameState.combat.block - (build.damageReduction || 0));
     gameState.hp -= damage;
     gameState.combat.lastEnemyAction = intent === "charge" ? "강력한 일격으로 " + damage + " 피해를 입혔습니다." : "공격해 " + damage + " 피해를 입혔습니다.";
   }
@@ -947,7 +956,7 @@ function checkCombatEnd() {
   completeNode((finalBoss ? "던전의 지배자를 물리쳤습니다." : node.type === "boss" ? "층의 수호자를 물리쳤습니다." : "몬스터를 물리쳤습니다.") + " 🪙 금화 " + reward + "개를 얻었습니다.");
   if (finalBoss) endRun(true, "세 층의 던전을 돌파하고 왕관 슬라임 대왕을 물리쳤습니다!");
   else {
-    gameState.reward = { open: true };
+    gameState.reward = { open: true, relicId: getRewardRelic() };
     document.getElementById("rewardTitle").textContent = "🏆 전투 승리!";
     document.getElementById("rewardText").textContent = "쓰러뜨린 몬스터: " + defeatedEnemy + ". 🪙 금화 " + reward + "개를 얻었습니다. 전리품을 선택하세요.";
     document.getElementById("nodeHint").textContent = "전투 보상을 선택하세요.";
@@ -1081,11 +1090,19 @@ function hasRelic(id) {
 
 function getEventRelic() {
   const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
+  const floorProgress = Math.min(1, Math.max(0, (gameState.floor - 1) / 2));
+  const curseChance = difficulty.curseChance * (.25 + floorProgress * .75);
   const cursed = ["inkStain", "crackedSeal", "missingPage"];
   const helpful = ["starMap", "compass", "archiveKey"];
-  const pool = Math.random() < difficulty.curseChance ? cursed : helpful;
+  const pool = Math.random() < curseChance ? cursed : helpful;
   const available = pool.filter(function (id) { return !hasRelic(id); });
   return available.length ? available[Math.floor(Math.random() * available.length)] : pool[Math.floor(Math.random() * pool.length)];
+}
+
+function getRewardRelic() {
+  const helpful = ["starMap", "compass", "archiveKey"];
+  const available = helpful.filter(function (id) { return !hasRelic(id); });
+  return available.length ? available[Math.floor(Math.random() * available.length)] : null;
 }
 
 function renderRelics() {
