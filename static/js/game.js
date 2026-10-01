@@ -59,11 +59,11 @@ const RANKS = [
 const NODE_SCORE = { battle: 100, event: 80, shop: 60, elite: 180, boss: 300 };
 
 const DIFFICULTIES = {
-  1: { name: "I · 초심자의 숲", description: "몬스터가 약한 초심자용 던전입니다.", enemyHp: 1, enemyDamage: 1, reward: 1, curseChance: 0, scoreMultiplier: 1 },
-  2: { name: "II · 잊힌 폐허", description: "몬스터의 체력과 공격력이 조금 높아집니다.", enemyHp: 1.15, enemyDamage: 1.1, reward: 1.15, curseChance: 0, scoreMultiplier: 1.25 },
-  3: { name: "III · 저주받은 지하묘지", description: "강한 몬스터와 저주받은 유물이 등장합니다.", enemyHp: 1.3, enemyDamage: 1.2, reward: 1.3, curseChance: .35, scoreMultiplier: 1.5 },
-  4: { name: "IV · 슬라임 왕의 둥지", description: "정예 왕관 슬라임과 저주의 위험이 큽니다.", enemyHp: 1.5, enemyDamage: 1.35, reward: 1.5, curseChance: .6, scoreMultiplier: 1.8 },
-  5: { name: "V · 왕관 슬라임의 성채", description: "슬라임 왕국의 지배자가 기다립니다. 보상과 위험이 모두 큽니다.", enemyHp: 1.75, enemyDamage: 1.55, reward: 1.8, curseChance: .85, scoreMultiplier: 2.2 },
+  1: { name: "I · 초심자의 숲", description: "몬스터가 약하고 전투마다 생명력이 완전히 회복됩니다.", enemyHp: 1, enemyDamage: 1, reward: 1, curseChance: 0, scoreMultiplier: 1, combatRecovery: 1 },
+  2: { name: "II · 잊힌 폐허", description: "몬스터의 체력과 공격력이 조금 높아집니다.", enemyHp: 1.2, enemyDamage: 1.15, reward: 1.15, curseChance: 0, scoreMultiplier: 1.25, combatRecovery: .9 },
+  3: { name: "III · 저주받은 지하묘지", description: "강한 몬스터와 저주받은 유물이 등장합니다.", enemyHp: 1.4, enemyDamage: 1.3, reward: 1.3, curseChance: .5, scoreMultiplier: 1.5, combatRecovery: .8 },
+  4: { name: "IV · 슬라임 왕의 둥지", description: "정예 왕관 슬라임과 저주가 모험을 압박합니다.", enemyHp: 1.7, enemyDamage: 1.5, reward: 1.5, curseChance: .75, scoreMultiplier: 1.8, combatRecovery: .7 },
+  5: { name: "V · 왕관 슬라임의 성채", description: "몬스터가 크게 강화되고 저주가 반드시 등장합니다. 전투 사이 회복도 제한됩니다.", enemyHp: 2.15, enemyDamage: 1.85, reward: 1.8, curseChance: 1, scoreMultiplier: 2.2, combatRecovery: .55 },
 };
 
 const RELIC_LIBRARY = {
@@ -407,10 +407,14 @@ function renderEvent() {
     return;
   }
   panel.hidden = false;
+  const discardChoice = gameState.relics.length
+    ? '<button class="event-choice discard-relic-choice" data-event-choice="discard-relic" type="button"><strong>🗑️ 유물 하나 버리기</strong><span>가방의 유물 중 하나를 무작위로 버립니다. 저주를 떨쳐낼 수 있지만 무엇을 잃을지는 알 수 없습니다.</span></button>'
+    : '';
   choices.innerHTML =
     '<button class="event-choice" data-event-choice="upgrade" type="button"><strong>⚒️ 숫돌로 연마</strong><span>카드 한 장을 한 등급 강화합니다.</span></button>' +
     '<button class="event-choice" data-event-choice="max-hp" type="button"><strong>💚 생명의 샘</strong><span>최대 생명력 +5, 생명력을 모두 회복합니다.</span></button>' +
-    '<button class="event-choice" data-event-choice="relic" type="button"><strong>🪙 보급 상자</strong><span>금화 25개와 유물 하나를 얻습니다.</span></button>';
+    '<button class="event-choice" data-event-choice="relic" type="button"><strong>🪙 보급 상자</strong><span>금화 25개와 유물 하나를 얻습니다.</span></button>' +
+    discardChoice;
   choices.querySelectorAll(".event-choice").forEach(function (button) {
     button.addEventListener("click", function () { chooseEvent(button.dataset.eventChoice); });
   });
@@ -491,10 +495,21 @@ function chooseEvent(choice) {
     finishEvent("최대 생명력이 5 늘고 모두 회복했습니다.");
     return;
   }
+  if (choice === "discard-relic") {
+    discardRandomRelic();
+    return;
+  }
   gameState.gold += 25;
   const relicId = getEventRelic();
   addRelic(relicId);
   finishEvent("🪙 금화 25개와 유물 " + RELIC_LIBRARY[relicId].name + "을 얻었습니다. " + RELIC_LIBRARY[relicId].description);
+}
+
+function discardRandomRelic() {
+  if (!gameState.event || !gameState.relics.length) return;
+  const index = Math.floor(Math.random() * gameState.relics.length);
+  const discarded = gameState.relics.splice(index, 1)[0];
+  finishEvent("🗑️ " + RELIC_LIBRARY[discarded.id].name + "을(를) 무작위로 버렸습니다. " + RELIC_LIBRARY[discarded.id].description);
 }
 
 function showUpgradeChoices() {
@@ -629,7 +644,7 @@ function startCombat(node) {
   const difficulty = DIFFICULTIES[gameState.difficulty] || DIFFICULTIES[1];
   const boss = node.type === "boss";
   const firstFloorBoss = boss && node.floor === 1;
-  gameState.hp = gameState.maxHp;
+  gameState.hp = Math.min(gameState.maxHp, Math.max(1, Math.round(gameState.maxHp * difficulty.combatRecovery)));
   gameState.deck = gameState.cardPool.map(function (card) {
     return createCard(card.id, card.rank);
   });

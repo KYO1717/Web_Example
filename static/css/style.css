@@ -429,6 +429,8 @@ li .when {
 .event-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .event-choice { min-height: 102px; padding: 14px; border: 1px solid #e4c99e; border-radius: 8px; background: #fff; text-align: left; }
 .event-choice:hover { border-color: #ad6b2f; background: #fff8ec; }
+.discard-relic-choice { border-color: #e4b8b3; background: #fffafa; }
+.discard-relic-choice:hover { border-color: #c2413b; background: #fff0ed; }
 .event-choice strong, .event-choice span { display: block; }
 .event-choice strong { margin-bottom: 8px; color: #8b5527; font-size: 14px; }
 .event-choice span { color: var(--gray); font-size: 12px; line-height: 1.5; }
