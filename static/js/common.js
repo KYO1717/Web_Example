@@ -61,7 +61,7 @@ function openSupportModal() {
       '<p class="eyebrow">SUPPORT THE ADVENTURE</p>' +
       '<h2 id="supportTitle">💛 후원하기</h2>' +
       '<p>기록자의 모험을 응원해 주셔서 감사합니다.</p>' +
-      '<div class="support-account"><span>토스</span><strong>1908-5150-0168</strong></div>' +
+      '<div class="support-account"><span>토스</span><strong>1002-6279-0294</strong></div>' +
       '<p class="support-note">계좌번호를 확인한 뒤 후원해 주세요.</p>' +
       '</section>';
     modal.addEventListener("click", function (event) {
